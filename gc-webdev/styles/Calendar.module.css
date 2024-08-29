@@ -1,0 +1,55 @@
+.calendar {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .row {
+    display: flex;
+  }
+  .col {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+  }
+  .col-start {
+    text-align: left;
+  }
+  .col-center {
+    text-align: center;
+  }
+  .col-end {
+    text-align: right;
+  }
+  .days .col {
+    background: #f0f0f0;
+    font-weight: bold;
+  }
+  .cell {
+    min-height: 80px;
+    position: relative;
+  }
+  .number {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  .selected {
+    background: #e0e0e0;
+  }
+  .disabled {
+    color: #d0d0d0;
+  }
+  .progress {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 12px;
+    color: #0070f3;
+  }
+  
