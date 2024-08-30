@@ -59,63 +59,41 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
   }
 });
 
-// userRouter.post('/upload-transcript', upload.single('transcript'), authMiddleware, async (req, res) => {
-//   try {
-//     const { userId, fileStorageName, transcriptText } = req.body;
-
-//     if (!userId || !fileStorageName || !transcriptText) {
-//       return res.status(400).send('Missing required information');
-//     }
-
-//     // Update the user's audioList with the transcript text
-//     const updatedUser = await usermodel.findOneAndUpdate(
-//       { _id: userId, "audioList.fileStorageName": fileStorageName },
-//       { $set: { "audioList.$.transcriptText": transcriptText } },
-//       { new: true }
-//     );
-
-//     if (!updatedUser) {
-//       return res.status(404).send('User or audio file not found');
-//     }
-
-//     res.status(200).json({ message: 'Transcript uploaded successfully', user: updatedUser });
-//   } catch (error) {
-//     console.error('Error uploading transcript:', error);
-//     res.status(500).send(error.message || 'Server error');
-//   }
-// });
-
-userRouter.post('/upload-transcript', upload.single('transcript'), authMiddleware, async (req, res) => {
+// , upload.single('transcript')
+userRouter.post('/upload-transcript', authMiddleware, async (req, res) => {
   try {
-    const userId = req.body.userId;
-    const transcript = req.body.transcript;
+    const { userId, fileStorageName, transcript } = req.body;
 
-    if (!transcript) {
-      return res.status(400).send('No text provided');
+    if (!transcript || !fileStorageName) {
+      return res.status(400).send('Transcript or file name is missing');
     }
 
-    if (!userId) {
-      return res.status(400).send('User ID is missing');
-    }
-
-    // if (!fileStorageName) {
-    //   return res.status(400).send('File name is missing');
+    // if (!userId) {
+    //   return res.status(400).send('User ID is missing');
     // }
 
-    // Update the user's audioList with the transcript text
-    const updatedUser = await usermodel.findOneAndUpdate(userId, {
-      $push: {
-        audioList: {
-          transcript: transcript
-        },
-      },
-    }, { new: true });
+    // const updatedUser = await usermodel.findOneAndUpdate(userId, {
+    //   $push: {
+    //     audioList: {
+    //       transcript: transcript
+    //     },
+    //   },
+    // }, { new: true });
+
+    const user = await usermodel.findOneAndUpdate(
+      { _id: userId, 'audioList.fileStorageName': fileStorageName },
+      { $set: { 'audioList.$.transcript': transcript } },
+      { new: true }
+    );
     
-    if (!updatedUser) {
-      return res.status(404).send('User not found');
+    // if (!updatedUser) {
+    //   return res.status(404).send('User not found');
+    // }
+    if (!user) {
+      return res.status(404).send('User or file not found');
     }
 
-    res.status(200).json({ message: 'Transcript uploaded successfully', user: updatedUser });
+    res.status(200).json({ success: true, message: 'Transcript uploaded successfully' });
   } catch (error) {
     console.error('Error uploading transcript:', error);
     res.status(500).send(error.message || 'Server error');

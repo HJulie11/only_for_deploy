@@ -1,11 +1,14 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import Upload from '../component/Upload';
 import AudioList from '../component/AudioList';
 import MainLayout from '../component/MainLayout';
+import { storeContext } from '../context/storeContext';
 
 const Page = () => {
+  const { url } = useContext(storeContext);
+  
   const handleUpload = async (files: File[]) => {
     try {
       const formData = new FormData();
@@ -20,7 +23,7 @@ const Page = () => {
         return;
       }
 
-      const response = await axios.post("http://localhost:4000/api/user/upload-audio", formData, {
+      const response = await axios.post(`{${url}/api/user/upload-audio`, formData, {
         headers: {
           'token': token,
           'Content-Type': 'multipart/form-data',

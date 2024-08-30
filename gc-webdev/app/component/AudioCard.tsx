@@ -13,7 +13,7 @@ interface AudioCardProps {
 const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName }) => {
   const [progress, setProgress] = useState(0);
   const router = useRouter();
-  const { token, url } = useContext(storeContext);
+  const { url } = useContext(storeContext);
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
 
   const handleTranscriptClick = () => {
@@ -27,6 +27,34 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
     router.push(`/dictation?fileStorageName=${encodeURIComponent(fileStorageName)}`);
   };
 
+  const handleTranscriptUpload = async (transcript: string) => {
+    try {
+      // const formData = new FormData();
+      // formData.append('transcript', transcript);
+
+      // const token = LocalStorage.getItem('token');
+      // console.log('Token:', token);
+      // if (!token) {
+      //   console.error('Token is missing');
+      //   return;
+      // }
+
+      const response = await axios.post(`${url}/api/user/upload-transcript`, {fileStorageName, transcript}, {
+        headers: {
+          'token': LocalStorage.getItem('token') || '',
+          // 'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        console.log('Transcript uploaded successfully:', response.data.message);
+      } else {
+        console.error('Failed to upload transcript:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error uploading transcript:', error);
+    }
+  }
 
   useEffect(() => {
     const fakeUpload = setInterval(() => {
@@ -69,9 +97,8 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
       </div>
       {showTranscriptModal && (
         <TranscriptPopup
-          fileStorageName={fileStorageName}
           onClose={() => setShowTranscriptModal(false)}
-          userId={token}
+          onSave={handleTranscriptUpload}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AudioCard from './AudioCard';
+import { storeContext } from '../context/storeContext';
 
 interface AudioFile {
   fileDisplayName: string;
@@ -9,6 +10,7 @@ interface AudioFile {
 
 const AudioList: React.FC = () => {
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+  const { url } = useContext(storeContext)
 
   useEffect(() => {
     const fetchAudioFiles = async () => {
@@ -19,7 +21,7 @@ const AudioList: React.FC = () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:4000/api/user/audio-files', {
+        const response = await axios.get(`${url}/api/user/audio-files`, {
           headers: {
             'token': token,
           },
