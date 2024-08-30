@@ -10,7 +10,7 @@ interface AudioFile {
 
 const AudioList: React.FC = () => {
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const { url } = useContext(storeContext)
+  const { url } = useContext(storeContext);
 
   useEffect(() => {
     const fetchAudioFiles = async () => {

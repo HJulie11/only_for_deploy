@@ -38,7 +38,7 @@ const Page = () => {
     } catch (error) {
       console.error('Error uploading files:', error);
     }
-    window.location.reload();
+    // window.location.reload();
   };
 
   return (

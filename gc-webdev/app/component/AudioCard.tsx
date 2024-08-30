@@ -29,16 +29,6 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
 
   const handleTranscriptUpload = async (transcript: string) => {
     try {
-      // const formData = new FormData();
-      // formData.append('transcript', transcript);
-
-      // const token = LocalStorage.getItem('token');
-      // console.log('Token:', token);
-      // if (!token) {
-      //   console.error('Token is missing');
-      //   return;
-      // }
-
       const response = await axios.post(`${url}/api/user/upload-transcript`, {fileStorageName, transcript}, {
         headers: {
           'token': LocalStorage.getItem('token') || '',
