@@ -23,7 +23,7 @@ const Page = () => {
         return;
       }
 
-      const response = await axios.post(`{${url}/api/user/upload-audio`, formData, {
+      const response = await axios.post(`${url}/api/user/upload-audio`, formData, {
         headers: {
           'token': token,
           'Content-Type': 'multipart/form-data',
@@ -38,7 +38,7 @@ const Page = () => {
     } catch (error) {
       console.error('Error uploading files:', error);
     }
-    // window.location.reload();
+    window.location.reload();
   };
 
   return (
