@@ -7,14 +7,16 @@ interface StoreContextProps {
   setToken: React.Dispatch<React.SetStateAction<string>>;
 }
 
+
+
 export const storeContext = createContext<StoreContextProps>({
-  url: 'http://localhost:4000',
+  url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   token: '',
   setToken: () => {}
 });
 
 const StoreContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const url = 'http://localhost:4000';
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const [token, setToken] = useState<string>(LocalStorage.getItem('token') || '');
 
   useEffect(() => {

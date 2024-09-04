@@ -13,7 +13,10 @@ const port = 4000
  
 //MIDDLEWARE
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    origin: 'https://gyeong-cheong.vercel.app',
+  credentials: true
+}))
 app.use(express.static('uploads'));
 
 // Middleware to parse JSON bodies
