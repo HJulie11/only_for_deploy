@@ -10,6 +10,7 @@ interface AudioFile {
 
 const AudioList: React.FC = () => {
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);  // Add state for userId
   const { url } = useContext(storeContext);
 
   useEffect(() => {
@@ -26,6 +27,8 @@ const AudioList: React.FC = () => {
             'token': token,
           },
         });
+
+        console.log(response)
 
         setAudioFiles(response.data.audioFiles);
       } catch (error) {

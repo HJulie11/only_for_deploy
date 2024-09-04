@@ -24,7 +24,7 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
 
   const handleClick = () => {
     // Navigate to DictationPage with fileStorageName as a query parameter
-    router.push(`/dictation?fileStorageName=${encodeURIComponent(fileStorageName)}`);
+    router.push(`/dictation?fileStorageName=${encodeURIComponent(fileStorageName)}&cardType=audio`);
   };
 
   const handleTranscriptUpload = async (transcript: string) => {

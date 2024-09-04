@@ -100,6 +100,63 @@ userRouter.post('/upload-transcript', authMiddleware, async (req, res) => {
   }
 });
 
+// userRouter.get('/audio-transcript', authMiddleware, async (req, res) => {
+//   try {
+//     const userId = req.body.userId;
+//     console.log('Fetching audio files for user:', userId);
+
+//     if (!userId) {
+//       return res.status(400).json({ error: 'User ID is missing' });
+//     }
+
+//     const user = await usermodel.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     console.log('User found:', user);
+//     res.status(200).json({ success:true, transcript: user.audioList.transcript });
+//   } catch (error) {
+//     console.error('Error fetching audio files:', error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+userRouter.get('/audio-transcript', authMiddleware, async (req, res) => {
+  const userId = req.body.userId;
+  const fileStorageName = req.query.fileStorageName;
+
+  console.log('Received userId:', userId);
+  console.log('Received fileStorageName:', fileStorageName);
+
+  if (!userId || !fileStorageName) {
+    return res.status(400).json({ error: 'Missing userId or fileStorageName' });
+  }
+
+  try {
+    const user = await usermodel.findById(userId);
+    if (!user) {
+      console.error('User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // const audioFile = user.audioList.find(audio => audio.fileStorageName === fileStorageName);
+    const audioFile = user.audioList.find(audio => audio.fileStorageName === fileStorageName);
+    console.log('Audio file:', audioFile);
+    if (!audioFile) {
+      console.error('Audio file not found');
+      return res.status(404).json({ message: 'Audio file not found' });
+    }
+
+    console.log('Transcript:', audioFile.transcript); // Log the transcript
+    res.status(200).json({ success: true, transcript: audioFile.transcript });
+  } catch (error) {
+    console.error('Error fetching audio transcript:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+
 userRouter.get('/audio-files', authMiddleware, async (req, res) => {
   try {
     const userId = req.body.userId;
