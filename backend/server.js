@@ -14,8 +14,8 @@ const port = 4000
 //MIDDLEWARE
 app.use(express.json())
 app.use(cors({
-    origin: 'https://gyeong-cheong.vercel.app',
-  credentials: true
+    origin: 'https://www.gyeong-cheong.com',
+    credentials: true
 }))
 app.use(express.static('uploads'));
 
