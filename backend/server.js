@@ -13,11 +13,11 @@ const port = 4000
  
 //MIDDLEWARE
 app.use(express.json())
-// app.use(cors({
-//     origin: 'https://www.gyeongcheong.com',
-//     credentials: true
-// }))
-app.use(cors())
+app.use(cors({
+    origin: 'https://www.gyeongcheong.com',
+    credentials: true
+}))
+// app.use(cors())
 app.use(express.static('uploads'));
 
 // Middleware to parse JSON bodies
