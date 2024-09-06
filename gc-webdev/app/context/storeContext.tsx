@@ -10,13 +10,13 @@ interface StoreContextProps {
 
 
 export const storeContext = createContext<StoreContextProps>({
-  url: process.env.NEXT_PUBLIC_API_URL || 'https://gyeongcheong-server.vercel.app',
+  url: process.env.NEXT_PUBLIC_API_URL || 'https://only-for-deploy-8gs1.vercel.app',
   token: '',
   setToken: () => {}
 });
 
 const StoreContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'https://gyeongcheong-server.vercel.app';
+  const url = process.env.NEXT_PUBLIC_API_URL || 'https://only-for-deploy-8gs1.vercel.app';
   const [token, setToken] = useState<string>(LocalStorage.getItem('token') || '');
 
   useEffect(() => {

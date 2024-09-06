@@ -71,10 +71,10 @@ app.get('/', (req, res) => {
 //     console.log(`Server started on http://localhost:${port}`)
 // })
 
-const PORT = process.env.PORT || 4000;
+// const PORT = process.env.PORT || 4000;
 
-app.listen(PORT, () => {
-  console.log(`Server Listening on ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server Listening on ${port}`);
 });
 
 // mongodb+srv://gyeongcheong23:OMIM5vasaz7gnC84@cluster0.d8iwxjc.mongodb.net/?
