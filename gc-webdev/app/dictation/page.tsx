@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useContext } from 'react';
 import Dictation_textbox from '../component/Dictation_textbox';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { storeContext } from '../context/storeContext';
 
 const DictationPageContent = () => {
   const searchParams = useSearchParams();
@@ -14,6 +15,7 @@ const DictationPageContent = () => {
   const fileStorageName = searchParams.get('fileStorageName') ?? '';
   const cardType = searchParams.get('cardType') ?? '';
   const userId = searchParams.get('userId') ?? '';
+  const { url: apiUrl } = useContext(storeContext);
 
   // New state to store user input
   const [userAnswer, setUserAnswer] = useState('');
@@ -23,7 +25,8 @@ const DictationPageContent = () => {
 
   // Construct URLs
   const embedUrl = `https://www.youtube.com/embed/${key}`;
-  const audioUrl = `http://localhost:4000/audioFiles/${fileStorageName}`;
+  // const audioUrl = `http://localhost:4000/audioFiles/${fileStorageName}`;
+  const audioUrl = `${apiUrl}/audioFiles/${fileStorageName}`;
 
   // Determine the type of content to render
   const isYouTubeVideo = cardType === 'news' && key && key !== 'Default';
