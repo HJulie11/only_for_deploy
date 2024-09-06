@@ -13,10 +13,20 @@ const port = 4000
  
 //MIDDLEWARE
 app.use(express.json())
-app.use(cors({
+
+const corsOptions = {
     origin: 'https://www.gyeongcheong.com',
-    credentials: true
-}))
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204
+  };
+  
+app.use(cors(corsOptions));
+
+// app.use(cors({
+//     origin: 'https://www.gyeongcheong.com',
+//     credentials: true
+// }))
 // app.use(cors())
 app.use(express.static('uploads'));
 
