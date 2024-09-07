@@ -23,10 +23,6 @@ const corsOptions = {
   
 app.use(cors(corsOptions));
 
-// app.use(cors({
-//     origin: 'https://www.gyeongcheong.com',
-//     credentials: true
-// }))
 // app.use(cors())
 app.use(express.static('uploads'));
 

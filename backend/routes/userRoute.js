@@ -36,7 +36,8 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
 
     // Extract the original name and storage name
     const fileDisplayName = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    const fileStorageName = file.filename;
+    // const fileStorageName = file.filename;
+    const fileStorageName = `/uploads/${file.filename}`;
 
     // Update user audioList
     const updatedUser = await usermodel.findByIdAndUpdate(userId, {
