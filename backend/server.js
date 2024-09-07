@@ -10,7 +10,7 @@ import { YoutubeTranscript } from 'youtube-transcript';
 // APP CONFIG
 const app = express()
 const port = 4000
-const cors = require('cors');
+// const cors = require('cors');
  
 //MIDDLEWARE
 app.use(express.json())
