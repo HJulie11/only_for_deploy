@@ -10,8 +10,8 @@ interface StoreContextProps {
 
 
 export const storeContext = createContext<StoreContextProps>({
-  url: process.env.NEXT_PUBLIC_API_URL || '',
-  // url: 'https://only-for-deploy-8gs1.vercel.app',
+  // url: process.env.NEXT_PUBLIC_API_URL || '',
+  url: 'https://only-for-deploy-8gs1.vercel.app',
   // url:  'http://localhost:4000',
   // url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
   token: '',
@@ -19,8 +19,8 @@ export const storeContext = createContext<StoreContextProps>({
 });
 
 const StoreContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  // const url = 'https://only-for-deploy-8gs1.vercel.app';
+  // const url = process.env.NEXT_PUBLIC_API_URL;
+  const url = 'https://only-for-deploy-8gs1.vercel.app';
   // const url = 'http://localhost:4000';
   // const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
   const [token, setToken] = useState<string>(LocalStorage.getItem('token') || '');
@@ -34,7 +34,7 @@ const StoreContextProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const contextValue = {
-    url: url ?? '',
+    url,
     token,
     setToken
   };
