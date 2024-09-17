@@ -42,9 +42,10 @@ const userSchema = new mongoose.Schema({
         type: String
     },
     audioList: [{ 
-        fileDisplayName: String,
-        fileStorageName: String,
-        transcript: String,
+        fileDisplayName: String,  // Original file name for display
+        fileStorageName: String,  // AWS S3 file key (storage name)
+        url: String,              // AWS S3 file URL for playback
+        transcript: String        // Transcript of the audio
     }]
 }, {minimize: false});
 

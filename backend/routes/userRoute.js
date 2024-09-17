@@ -3,18 +3,30 @@ import { loginUser, registerUser } from '../controllers/usercontroller.js';
 import usermodel from '../models/usermodel.js';
 import multer from 'multer';
 import authMiddleware from '../middleware/auth.js';
+import AWS from 'aws-sdk';
+import crypto from 'crypto';
+import path from 'path';
 
 const userRouter = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    cb(null, `${Date.now()}_${fileName}`); // Appending timestamp to filename
-  }
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
 });
+
+const storage = multer.memoryStorage();
+
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'uploads/');
+//   },
+//   filename: function (req, file, cb) {
+//     const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+//     cb(null, `${Date.now()}_${fileName}`); // Appending timestamp to filename
+//   }
+// });
 
 const upload = multer({ storage: storage });
 
@@ -35,16 +47,34 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
     }
 
     // Extract the original name and storage name
-    const fileDisplayName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    // const fileDisplayName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    // Generate a unique file name using timestamp and random characters
+    const fileExtension = path.extname(file.originalname);
     // const fileStorageName = file.filename;
-    const fileStorageName = `/uploads/${file.filename}`;
+    // const fileStorageName = `/uploads/${file.filename}`;
+    const fileStorageName = `${crypto.randomBytes(16).toString('hex')}_${Date.now()}${fileExtension}`;
+
+    // S3 upload parameters
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: `audio/${fileStorageName}`, // file path in the bucket
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read' // access control
+    };
+    
+    // Upload file to S3
+    const s3Upload = await s3.upload(params).promise();
+
+    // Save file path (S3 URL) in MongoDB for the user
+    const fileDisplayName = Buffer.from(file.originalname, 'latin1').toString('utf8');
 
     // Update user audioList
     const updatedUser = await usermodel.findByIdAndUpdate(userId, {
       $push: {
         audioList: {
           fileDisplayName: fileDisplayName,
-          fileStorageName: fileStorageName
+          fileStorageName: s3Upload.Location //S3 URL for the uploaded file
         },
       },
     }, { new: true });
@@ -53,7 +83,8 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
       return res.status(404).send('User not found');
     }
 
-    res.status(200).json({ message: 'File uploaded successfully', user: updatedUser });
+    // res.status(200).json({ message: 'File uploaded successfully', user: updatedUser });
+    res.status(200).json({ success: true, message: 'File uploaded successfully', user: updatedUser });
   } catch (error) {
     console.error('Error during file upload:', error);
     res.status(500).send(error.message || 'Server error');

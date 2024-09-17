@@ -30,7 +30,7 @@ const Page = () => {
         },
       });
 
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         console.log('Files uploaded successfully:', response.data.message);
       } else {
         console.error('Failed to upload files:', response.data.message);
@@ -38,7 +38,7 @@ const Page = () => {
     } catch (error) {
       console.error('Error uploading files:', error);
     }
-    // window.location.reload();
+    window.location.reload();
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useContext } from 'react';
+import React, { useState, Suspense, useContext, useEffect } from 'react';
 import Dictation_textbox from '../component/Dictation_textbox';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -22,15 +22,21 @@ const DictationPageContent = () => {
 
   console.log("Received cardType:", cardType);
   console.log("Received key:", key);
+  console.log("Received fileStorageName:", fileStorageName);
 
   // Construct URLs
   const embedUrl = `https://www.youtube.com/embed/${key}`;
   // const audioUrl = `http://localhost:4000/audioFiles/${fileStorageName}`;
-  const audioUrl = `${apiUrl}/audioFiles/${fileStorageName}`;
+  // const audioUrl = `https://aws-s3-audio-upload-bucket.s3.ap-northeast-2.amazonaws.com/audio/${fileStorageName}`;
+  const audioUrl = `${fileStorageName}`
 
   // Determine the type of content to render
   const isYouTubeVideo = cardType === 'news' && key && key !== 'Default';
   const isAudioFile = cardType === 'audio' && fileStorageName && fileStorageName !== '';
+
+  useEffect(() => {
+    console.log("Audio URL:", audioUrl);
+  }, [audioUrl]);
 
   console.log("Card Type:", cardType);
   console.log("YouTube Key:", key);
