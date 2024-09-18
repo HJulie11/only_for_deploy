@@ -34,7 +34,7 @@ const loginAdmin = async (req,res) => {
 
 // REGISTER ADMIN
 const registerAdmin = async (req, res) => {
-    const { adminname, email, password, mobilenumber, address, institute, group } = req.body;
+    const { adminname, email, password, mobilenumber, address, institute, group, studentlist, studentnumber, groupadmin } = req.body;
     
     try {
         // Access uploaded files
