@@ -16,22 +16,22 @@ const adminSchema = new mongoose.Schema({
     },
     mobilenumber: {
         type: String,
-        required: true
+        // required: true
     },
     address: {
         type: String,
-        required: true
+        // required: true
     },
     position: {
         type: String
     },
     registerDate:{
         type: String,
-        required: true
+        // required: true
     },
     institute: {
         type: String,
-        required: true
+        // required: true
     },
     group: {
         type: String,
