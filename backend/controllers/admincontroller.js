@@ -34,7 +34,7 @@ const loginAdmin = async (req,res) => {
 
 // REGISTER ADMIN
 const registerAdmin = async (req, res) => {
-    const { adminname, email, password, mobilenumber, address, institute, group, studentlist, groupadmin } = req.body;
+    const { adminname, email, password, mobilenumber, address, position, registerDate, institute, group, studentlist, studentnumber, groupadmin } = req.body;
     
     try {
         // Access uploaded files
@@ -69,18 +69,18 @@ const registerAdmin = async (req, res) => {
         const formattedDate = `${currentDate.getFullYear()}.${(currentDate.getMonth() + 1).toString().padStart(2, '0')}.${currentDate.getDate().toString().padStart(2, '0')}`;
 
         const newAdmin = new adminModel({
-            adminname,
-            email,
+            adminname: adminname,
+            email: email,
             password: hashedPassword,
-            mobilenumber,
-            address,
-            position: '총괄관리자',
-            registerDate: formattedDate,
-            institute,
-            group,
-            studentlist: [],
+            mobilenumber: mobilenumber,
+            address: address,
+            position: position,
+            registerDate: registerDate,
+            institute: institute,
+            group: group,
+            studentlist: studentlist || [],
             studentnumber: 0,
-            groupadmin: []
+            groupadmin: groupadmin || []
         });
 
         // Save Admin
