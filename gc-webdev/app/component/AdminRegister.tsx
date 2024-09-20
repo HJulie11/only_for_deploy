@@ -5,6 +5,7 @@ import CSVReader from 'react-csv-reader';
 import { useRouter } from 'next/navigation';
 import { storeContext } from '../context/storeContext';
 import axios from 'axios';
+import { group } from 'console';
 
 const DaumPostcode = dynamic(() => import('react-daum-postcode'), { ssr: false });
 
@@ -20,8 +21,10 @@ const AdminRegister: React.FC = () => {
         address: '', //기관 주소 {/* Institution address */}
         institute: '', //기관명 {/* Institution name */}
         group: '', //그룹명 {/* Group name */}
-        studentlist: null as File | null, //등록 학생 {/* registered students */}
-        groupadmin: null as File | null, //그룹 관리자 등록 {/* admins for each group registered */}
+        // studentlist: null as File | null, //등록 학생 {/* registered students */}
+        studentlist: [],
+        // groupadmin: null as File | null, //그룹 관리자 등록 {/* admins for each group registered */}
+        groupadmin: [],
     });
     const [error, setError] = useState('');
     const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
