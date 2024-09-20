@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useContext, useEffect } from 'react';
+import React, { useState, Suspense, useContext, useEffect, useRef } from 'react';
 import Dictation_textbox from '../component/Dictation_textbox';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -19,6 +19,7 @@ const DictationPageContent = () => {
 
   // New state to store user input
   const [userAnswer, setUserAnswer] = useState('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   console.log("Received cardType:", cardType);
   console.log("Received key:", key);
@@ -35,7 +36,30 @@ const DictationPageContent = () => {
   const isAudioFile = cardType === 'audio' && fileStorageName && fileStorageName !== '';
 
   useEffect(() => {
-    console.log("Audio URL:", audioUrl);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!audioRef.current) return;
+      // window/linux: Alt key, mac: Option key
+      if (event.altKey) {
+        switch (event.code) {
+          case 'KeyP': //Space to toggle play/pause
+            event.preventDefault();
+            if (audioRef.current.paused) {
+              audioRef.current.play();
+            } else {
+              audioRef.current.pause();
+            }
+            break;
+          case 'KeyR': //Left arrow to rewind 5 seconds
+            audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 5);
+            break;
+          case 'KeyF': //Right arrow to fast forward 5 seconds
+            audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 5);
+            break;
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [audioUrl]);
 
   console.log("Card Type:", cardType);
@@ -64,7 +88,7 @@ const DictationPageContent = () => {
                 allowFullScreen
               ></iframe>
             ) : isAudioFile ? (
-              <audio controls src={audioUrl} className='w-full max-w-lg'>
+              <audio ref={audioRef} controls src={audioUrl} className='w-full max-w-lg'>
                 Your browser does not support the audio element.
               </audio>
             ) : (
