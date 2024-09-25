@@ -1,33 +1,34 @@
+// reading/page.tsx
 "use client";
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-const ReadingPageContent = () => {
+const ReadingPageContent: React.FC = () => {
   const searchParams = useSearchParams();
-  const [userAnswer, setUserAnswer] = useState<string>('');
-  const [correctedWords, setCorrectedWords] = useState<{ [key: number]: boolean }>({});
+  const userAnswer = searchParams.get("userAnswer") ?? "";
+  const correctedWords = searchParams.get("correctedWords") ?? "";
 
-  useEffect(() => {
-    const userAnswerParam = searchParams.get('userAnswer') ?? '';
-    const correctedWordsParam = searchParams.get('correctedWords') ?? '{}';
-
-    setUserAnswer(userAnswerParam);
-    setCorrectedWords(JSON.parse(correctedWordsParam));
-  }, [searchParams]);
+  // Parse correctedWords from JSON
+  const correctedWordsObj = correctedWords ? JSON.parse(correctedWords) : {};
 
   const renderUserAnswer = () => {
-    const userAnswerWords = userAnswer.split(' ');
+    const userWordsArray = userAnswer.trim().split(/(?<=[^\s])(?=\W)|\s+/).filter(Boolean);
 
-    return userAnswerWords.map((word, index) => {
-      const isCorrected = correctedWords[index];
+    return userWordsArray.map((word, index) => {
+      const editedWord = correctedWordsObj[index]; // Get the edited word
+      
+      // Show the edited word if it exists, otherwise show the original
+      const displayWord = editedWord !== undefined ? editedWord : word;
+
+      const shouldNotWrap = ['.', ')'].includes(word); // Replace with your specific words
+
       return (
         <span
           key={index}
-          className={isCorrected ? 'text-red-500' : 'text-black'}
-          style={{ marginRight: '5px' }}
+          className={`${editedWord !== undefined ? "text-red-500" : "text-black"} ${shouldNotWrap ? 'no-wrap' : ''}`}
         >
-          {word}
+          {displayWord}
         </span>
       );
     });
@@ -58,13 +59,10 @@ const ReadingPageContent = () => {
         </div>
       </div>
       <div className='h-full p-4'>
-        <div className='w-full h-full border border-gray-300 rounded overflow-wrap-auto overflow-y-scroll' 
-          style={{
-            wordWrap: 'break-word',   // Wrap long words
-            whiteSpace: 'normal',     // Allow text to break to the next line
-            padding: '10px'
-        }}>
-          {renderUserAnswer()}
+        <div className='w-full h-full border border-gray-300 rounded overflow-wrap-auto overflow-y-scroll'>
+          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+            {renderUserAnswer()}
+          </pre>
         </div>
       </div>
     </div>
@@ -77,10 +75,6 @@ const ReadingPage = () => {
       <ReadingPageContent />
     </Suspense>
   );
-};
-
-ReadingPage.getLayout = function getLayout(page: React.ReactNode) {
-  return page;
 };
 
 export default ReadingPage;

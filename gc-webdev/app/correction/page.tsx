@@ -27,7 +27,8 @@ const CorrectionPageContent: React.FC = () => {
   const [transcript, setTranscript] = useState<string>("");
   const [userWords, setUserWords] = useState<Word[]>([]);
   const [userAnswer, setUserAnswer] = useState(userAnswerFromParams);
-  const [correctedWords, setCorrectedWords] = useState<{ [key: number]: boolean }>({});
+  // const [correctedWords, setCorrectedWords] = useState<{ [key: number]: boolean }>({});
+  const [correctedWords, setCorrectedWords] = useState<Record<number, string>>({});
 
   useEffect(() => {
     const getTranscript = async () => {
@@ -135,6 +136,7 @@ const CorrectionPageContent: React.FC = () => {
     }
   }, [userAnswer, transcript]);
 
+  // correction/page.tsx (only relevant sections)
   const handleWordEdit = (index: number, newWord: string) => {
     const updatedWords = [...userWords];
     updatedWords[index] = { 
@@ -143,7 +145,12 @@ const CorrectionPageContent: React.FC = () => {
       hasBeenEdited: true // Mark as edited
     };
     setUserWords(updatedWords);
-  };
+  
+    // Update correctedWords to hold the new edited word
+    const updatedCorrectedWords = { ...correctedWords, [index]: newWord }; // Store the edited word
+    setCorrectedWords(updatedCorrectedWords);
+  };   
+
   
   const handleFocus = (index: number) => {
     const updatedWords = [...userWords];
@@ -177,31 +184,29 @@ const CorrectionPageContent: React.FC = () => {
         <div className="w-full h-full p-4 text-lg border border-gray-300 rounded overflow-auto">
           <pre className='p-2 text-black' style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
             {userWords.map((word, index) => {
-                // Determine if the word should have special styling
-                const shouldNotWrap = ['.', ')'].includes(word.word); // Replace with your specific words
-
-                return (
-                  <span
-                    key={index}
-                    className={`${
-                      word.isCorrect
-                        ? "text-black"
-                        : word.isMissing
-                        ? "text-red-400"
-                        : word.hasBeenEdited || word.isEditing
-                        ? "text-red-500" // Maintain red color if edited
-                        : "text-black" // Incorrect but not edited
-                    } ${shouldNotWrap ? 'no-wrap' : ''}`} // Apply class conditionally
-                    contentEditable={!word.isCorrect}
-                    suppressContentEditableWarning={true}
-                    onFocus={() => handleFocus(index)} // Set editing state on focus
-                    onBlur={(e) => handleBlur(index, e)} // Handle blur event
-                    onKeyDown={(e) => handleKeyDown(e, index)} // Handle keydown event
-                  >
-                    {word.isMissing ? '  ' : word.word}
-                  </span>
-                );
-              })}
+              // Determine if the word should have special styling
+              return (
+                <span
+                  key={index}
+                  className={`${
+                    word.isCorrect
+                      ? "text-black"
+                      : word.isMissing
+                      ? "text-red-400"
+                      : word.hasBeenEdited || word.isEditing
+                      ? "text-red-500" // Maintain red color if edited
+                      : "text-black" // Incorrect but not edited
+                  }`}
+                  contentEditable={!word.isCorrect}
+                  suppressContentEditableWarning={true}
+                  onFocus={() => handleFocus(index)}
+                  onBlur={(e) => handleBlur(index, e)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                >
+                  {word.isMissing ? '  ' : word.word}
+                </span>
+              );
+            })}
           </pre>
         </div>
       </div>
