@@ -1,209 +1,139 @@
-"use client";
-
-import React, { useEffect, useState, Suspense, useContext } from "react";
+"use client"
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
-import { storeContext } from "../context/storeContext";
-import LocalStorage from "@/constants/localstorage";
 
-interface Word {
-  word: string;
-  isCorrect: boolean;
-  isMissing: boolean;
-  hasBeenEdited: boolean; // Track if the word has been edited
-  isEditing: boolean; // Track if the word is being edited
-}
+const debounce = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout | undefined; // Declare timeoutId here
 
-const CorrectionPageContent: React.FC = () => {
+  return (...args: any) => {
+    if (timeoutId) clearTimeout(timeoutId); // Clear existing timeout if any
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
+
+const CorrectionPageContent = () => {
   const searchParams = useSearchParams();
-  const url = searchParams.get("url") ?? "";
-  const userAnswerFromParams = searchParams.get("userAnswer") ?? "";
-  const cardType = searchParams.get("cardType") ?? "";
-  const userId = searchParams.get("userId") ?? "";
-  const fileStorageName = searchParams.get("fileStorageName");
-  const { url: apiUrl } = useContext(storeContext);
+  const transcript = searchParams.get("transcript")?.split(" ") || [];
+  const userAnswer = JSON.parse(searchParams.get("userAnswer") || "[]");
 
-  const [transcript, setTranscript] = useState<string>("");
-  const [userWords, setUserWords] = useState<Word[]>([]);
-  const [userAnswer, setUserAnswer] = useState(userAnswerFromParams);
-  // const [correctedWords, setCorrectedWords] = useState<{ [key: number]: boolean }>({});
-  const [correctedWords, setCorrectedWords] = useState<Record<number, string>>({});
+  const [correctedWords, setCorrectedWords] = useState<string[]>(userAnswer);
+  const [editableWords, setEditableWords] = useState<Set<number>>(new Set());
+  const [editedIncorrectWords, setEditedIncorrectWords] = useState<Set<number>>(new Set());
+  const [isAllCorrected, setIsAllCorrected] = useState<boolean>(false);
 
+  const normalizeApostrophes = (text: string) => {
+    return text.replace(/[’‘]/g, "'"); // Replace smart quotes with standard apostrophe
+  };
+
+  const isCorrectWord = (input: string, transcriptWord: string) => {
+    const normalizedInput = normalizeApostrophes(input.trim());
+    const normalizedTranscript = normalizeApostrophes(transcriptWord.trim());
+  
+    if (normalizedInput === normalizedTranscript) return true;
+  
+    const contractions = ["you've", "I'll", "it's", "he's", "she's", "they're", "we're"];
+    return contractions.includes(normalizedTranscript) && contractions.includes(normalizedInput);
+  };
+
+  // Effect to check if all incorrect words are corrected
   useEffect(() => {
-    const getTranscript = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/api/transcript?url=${encodeURIComponent(url)}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTranscript(data.transcript || "");
-        } else {
-          console.error("Error fetching transcript:", response.statusText);
-        }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error("Axios error:", error.response?.data || error.message);
-        } else {
-          console.error("Unexpected error:", error);
-        }
-      }
+    const checkAllCorrected = debounce(() => {
+      const allCorrected = Array.from(editableWords).every((index) =>
+        isCorrectWord(correctedWords[index], transcript[index])
+      );
+      setIsAllCorrected(allCorrected);
+    }, 300); // Adjust the delay as needed
+
+    checkAllCorrected(); // Call the debounced function
+
+    // Cleanup function
+    return () => {
+      // Since timeoutId is scoped in debounce, we don't need cleanup here
     };
+  }, [correctedWords, editableWords, transcript]); // Only re-run this effect when correctedWords or editableWords changes
 
-    const getAudioTranscript = async () => {
-      try {
-        const token = LocalStorage.getItem("token");
-        if (!token) {
-          console.error("Token is missing");
-          return;
-        }
-
-        const response = await axios.get(`${apiUrl}/api/user/audio-transcript`, {
-          headers: {
-            token: token,
-          },
-          params: {
-            userId,
-            fileStorageName,
-          },
-        });
-
-        setTranscript(response.data.transcript || "");
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error("Axios error:", error.response?.data || error.message);
-        } else {
-          console.error("Unexpected error:", error);
-        }
-      }
-    };
-
-    if (cardType === "news") {
-      getTranscript();
-    } else if (cardType === "audio") {
-      getAudioTranscript();
-    }
-  }, [url, cardType, userId, fileStorageName]);
-
+  // Existing useEffect for updating editableWords
   useEffect(() => {
-    const compareAnswers = () => {
-      const userWordsArray = userAnswer
-        .trim()
-        .split(/(?<=[^\s])(?=\W)|\s+/)
-        .filter(Boolean);
+    const incorrectIndices = userAnswer
+      .map((input: string, index: number) => {
+        return !isCorrectWord(input, transcript[index]) ? index : null;
+      })
+      .filter((index: number | null) => index !== null);
   
-      const transcriptWordsArray = transcript
-        .trim()
-        .split(/(?<=[^\s])(?=\W)|\s+/)
-        .filter(Boolean);
+    const newEditableWords: Set<number> = new Set(incorrectIndices);
   
-      const result: Word[] = [];
-      let transcriptIndex = 0;
-      let userIndex = 0;
-  
-      while (userIndex < userWordsArray.length || transcriptIndex < transcriptWordsArray.length) {
-        if (userIndex >= userWordsArray.length) {
-          result.push({ word: transcriptWordsArray[transcriptIndex], isCorrect: false, isMissing: true, hasBeenEdited: false, isEditing: false });
-          transcriptIndex++;
-        } else if (transcriptIndex >= transcriptWordsArray.length) {
-          result.push({ word: userWordsArray[userIndex], isCorrect: false, isMissing: false, hasBeenEdited: false, isEditing: false });
-          userIndex++;
-        } else {
-          const userWord = userWordsArray[userIndex];
-          const transcriptWord = transcriptWordsArray[transcriptIndex];
-  
-          if (userWord === transcriptWord) {
-            result.push({ word: userWord, isCorrect: true, isMissing: false, hasBeenEdited: false, isEditing: false });
-            userIndex++;
-            transcriptIndex++;
-          } else {
-            if (transcriptWordsArray[transcriptIndex + 1] && userWord === transcriptWordsArray[transcriptIndex + 1]) {
-              result.push({ word: transcriptWord, isCorrect: false, isMissing: true, hasBeenEdited: false, isEditing: false });
-              transcriptIndex++;
-            } else {
-              result.push({ word: userWord, isCorrect: false, isMissing: false, hasBeenEdited: false, isEditing: false });
-              userIndex++;
-              transcriptIndex++;
-            }
-          }
-        }
+    setEditableWords((prev) => {
+      if (JSON.stringify(Array.from(prev)) !== JSON.stringify(Array.from(newEditableWords))) {
+        return newEditableWords;
       }
-  
-      setUserWords(result);
-    };
-  
-    if (transcript && userAnswer) {
-      compareAnswers();
-    }
-  }, [userAnswer, transcript]);
+      return prev;
+    });
+  }, [userAnswer, transcript]); // This could also be optimized if necessary
 
-  // correction/page.tsx (only relevant sections)
-  const handleWordEdit = (index: number, newWord: string) => {
-    const updatedWords = [...userWords];
-    updatedWords[index] = { 
-      ...updatedWords[index], 
-      word: newWord, 
-      hasBeenEdited: true // Mark as edited
-    };
-    setUserWords(updatedWords);
-  
-    // Update correctedWords to hold the new edited word
-    const updatedCorrectedWords = { ...correctedWords, [index]: newWord }; // Store the edited word
-    setCorrectedWords(updatedCorrectedWords);
-  };   
-
-  
-  const handleFocus = (index: number) => {
-    const updatedWords = [...userWords];
-    updatedWords[index] = { ...updatedWords[index], isEditing: true }; // Mark word as being edited
-    setUserWords(updatedWords);
-  };
-
-  const handleBlur = (index: number, e: React.FocusEvent<HTMLSpanElement>) => {
-    handleWordEdit(index, e.target.textContent || '');
-    const updatedWords = [...userWords];
-    updatedWords[index] = { 
-      ...updatedWords[index], 
-      isEditing: false 
-    }; // Reset editing status
-    setUserWords(updatedWords);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>, index: number) => {
-    if (e.key === " ") {
-      e.preventDefault();
-      const nextEditableElement = document.querySelector(`span[contenteditable="true"]:not([data-index="${index}"])`);
-      if (nextEditableElement) {
-        (nextEditableElement as HTMLElement).focus();
-      }
+  const handleWordClick = (index: number) => {
+    if (editableWords.has(index)) {
+      const newEditableWords = new Set(editableWords);
+      newEditableWords.delete(index);
+      setEditableWords(newEditableWords);
+    } else {
+      setEditableWords((prev) => new Set(prev).add(index));
     }
   };
+
+  const handleInputChange = (index: number, value: string) => {
+    const newCorrectedWords = [...correctedWords];
+    newCorrectedWords[index] = value;
+    setCorrectedWords(newCorrectedWords);
+    
+    if (!editedIncorrectWords.has(index)) {
+      setEditedIncorrectWords((prev) => new Set(prev).add(index));
+    }
+  };
+
+  const filteredCorrectWords = correctedWords
+    .map((word, index) => {
+      return editedIncorrectWords.has(index) ? `${word}*` : word; // Append '*' to edited words
+    })
+    .filter((word, index) => index < transcript.length || word.trim() !== "");
 
   return (
     <div className="flex flex-row p-20 h-screen">
       <div className="flex flex-col w-[50%] h-full center items-center justify-center">
         <div className="w-full h-full p-4 text-lg border border-gray-300 rounded overflow-auto">
-          <pre className='p-2 text-black' style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-            {userWords.map((word, index) => {
-              // Determine if the word should have special styling
+          <pre
+            className="p-2 text-black"
+            style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", overflowWrap: "break-word" }}
+          >
+            {transcript.map((word, index) => {
+              const isEditable = editableWords.has(index);
+              const isEdited = editedIncorrectWords.has(index);
+              const isCorrect = isCorrectWord(correctedWords[index], transcript[index]);
+              const isInitiallyIncorrect = !isCorrectWord(userAnswer[index], transcript[index]);
+
               return (
                 <span
                   key={index}
-                  className={`${
-                    word.isCorrect
-                      ? "text-black"
-                      : word.isMissing
-                      ? "text-red-400"
-                      : word.hasBeenEdited || word.isEditing
-                      ? "text-red-500" // Maintain red color if edited
-                      : "text-black" // Incorrect but not edited
-                  }`}
-                  contentEditable={!word.isCorrect}
-                  suppressContentEditableWarning={true}
-                  onFocus={() => handleFocus(index)}
-                  onBlur={(e) => handleBlur(index, e)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  style={{
+                    display: "inline-block",
+                    margin: "5px",
+                    color: isEdited ? "red" : isInitiallyIncorrect ? "black" : "black",
+                  }}
                 >
-                  {word.isMissing ? '  ' : word.word}
+                  {isEditable ? (
+                    <input
+                      type="text"
+                      value={correctedWords[index]}
+                      onChange={(e) => handleInputChange(index, e.target.value)}
+                      onFocus={(e) => e.target.select()}
+                      style={{ width: `${word.length}ch` }}
+                      onBlur={() => handleWordClick(index)} // Save and blur input
+                    />
+                  ) : (
+                    <span onClick={() => handleWordClick(index)}>{correctedWords[index]}</span>
+                  )}
                 </span>
               );
             })}
@@ -214,7 +144,9 @@ const CorrectionPageContent: React.FC = () => {
       <div className="flex flex-col w-[50%] h-full px-5 center items-center justify-center">
         <div className="flex h-[90%] w-full center items-center justify-center">
           <div className="w-full h-full p-4 text-lg border border-gray-300 rounded overflow-y-scroll">
-            <pre className="p-2 m-1 text-black" style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>{transcript}</pre>
+            <pre className="p-2 m-1 text-black" style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+              {transcript.join(" ")}
+            </pre>
           </div>
         </div>
 
@@ -222,9 +154,10 @@ const CorrectionPageContent: React.FC = () => {
           <Link
             href={{
               pathname: "/reading",
-              query: { userAnswer, correctedWords: JSON.stringify(correctedWords) },
+              query: { correctedAnswers: JSON.stringify(filteredCorrectWords) },
             }}
-            className="flex w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white"
+            className={`flex w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg ${isAllCorrected ? 'bg-purple-middle' : 'bg-gray-400'} text-white`}
+            style={{ pointerEvents: isAllCorrected ? 'auto' : 'none' }} // Disable click when not all corrected
           >
             <p>제출하기</p>
           </Link>

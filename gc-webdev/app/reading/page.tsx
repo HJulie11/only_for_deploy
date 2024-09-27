@@ -1,38 +1,14 @@
-// reading/page.tsx
 "use client";
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 const ReadingPageContent: React.FC = () => {
   const searchParams = useSearchParams();
-  const userAnswer = searchParams.get("userAnswer") ?? "";
-  const correctedWords = searchParams.get("correctedWords") ?? "";
-
-  // Parse correctedWords from JSON
-  const correctedWordsObj = correctedWords ? JSON.parse(correctedWords) : {};
-
-  const renderUserAnswer = () => {
-    const userWordsArray = userAnswer.trim().split(/(?<=[^\s])(?=\W)|\s+/).filter(Boolean);
-
-    return userWordsArray.map((word, index) => {
-      const editedWord = correctedWordsObj[index]; // Get the edited word
-      
-      // Show the edited word if it exists, otherwise show the original
-      const displayWord = editedWord !== undefined ? editedWord : word;
-
-      const shouldNotWrap = ['.', ')'].includes(word); // Replace with your specific words
-
-      return (
-        <span
-          key={index}
-          className={`${editedWord !== undefined ? "text-red-500" : "text-black"} ${shouldNotWrap ? 'no-wrap' : ''}`}
-        >
-          {displayWord}
-        </span>
-      );
-    });
-  };
+  
+  // Get corrected answers from the search parameters
+  const correctedAnswers = searchParams.get("correctedAnswers") || "[]";
+  const correctedWords = JSON.parse(correctedAnswers);
 
   return (
     <div className='flex flex-col p-20 h-screen'>
@@ -58,13 +34,21 @@ const ReadingPageContent: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className='h-full p-4'>
-        <div className='w-full h-full border border-gray-300 rounded overflow-wrap-auto overflow-y-scroll'>
-          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-            {renderUserAnswer()}
-          </pre>
-        </div>
+      <div className='h-full p-4 border border-gray-300 rounded overflow-auto'>
+        <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+          {correctedWords.map((word: string, index: number) => (
+            <span key={index} style={{ color: word.endsWith('*') ? 'red' : 'black' }}>
+              {word.replace('*', '')} {/* Remove '*' when displaying */}
+            </span>
+          ))}
+        </pre>
       </div>
+
+      {/* <div className='flex h-[10%] w-full center items-center justify-center'>
+        <button className='flex w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'>
+          <p>제출하기</p>
+        </button>
+      </div> */}
     </div>
   );
 };
