@@ -18,6 +18,8 @@ const DictationPageContent: React.FC = () => {
 
   const [transcript, setTranscript] = useState<string>('');
   const [userAnswer, setUserAnswer] = useState<string[]>([]);
+  const [showPopup, setShowPopup] = useState(false); // State to show/hide the popup
+
   const { url: apiUrl } = useContext(storeContext);
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -118,28 +120,63 @@ const DictationPageContent: React.FC = () => {
   return (
     <>
       <div className='flex flex-row p-20 h-screen'>
-        <div className='w-full h-full p-4 text-lg border border-gray-300 rounded'>
-          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-            {transcript.split(" ").map((word, index) => (
-              <input
-                className='bg-gray-100'
-                key={index}
-                type="text"
-                value={userAnswer[index] || ''} // Use an empty string if undefined
-                onChange={(e) => handleInput(index, e.target.value)}
-                onKeyDown={(e) => handleKeyPress(e, index)}
-                style={{ margin: "5px", width: `${word.length}ch` }} // Adjust input width to fit the word
-                ref={(el) => {
-                  inputRefs.current[index] = el;
-                }} // Store input reference
-                onFocus={() => {
-                  // Optional: Select input text on focus
-                  inputRefs.current[index]?.select();
-                }}
-              />
-            ))}
-          </pre>
+        <div className='flex flex-col w-[60%]'>
+          <button className="ml-0 mb-3 rounded-full bg-gray-100 text-purple-heavy p-2 w-[20%] hover:bg-gray-200 text-sm" onClick={() => setShowPopup(!showPopup)}>
+            ℹ 단축키 정보
+          </button>
+
+          {/* The popup container */}
+          {showPopup && (
+            <>
+              {/* Shading the rest of the page */}
+              <div className="overlay" onClick={() => setShowPopup(false)}></div>
+
+              {/* Popup in the middle of the page */}
+              <div className="modal">
+                <div className="modal-content flex flex-col center items-center">
+                  <div className='p-0'><h2 className='font-bold ml-0 text-purple-heavy mb-7 mt-5'>ℹ 단축키 정보</h2></div>
+                  <ul style={{ listStyleType: 'disc', paddingLeft: '20px', textAlign:'left'}} >
+                    <li className='mt-1 mb-1'>command/ctrl + P : 음원 재생/멈춤</li>
+                    <li className='mb-1'>command/ctrl + R : 5초 앞으로</li>
+                    <li className='mb-1'>command/ctrl + F: 5초 뒤로</li>
+                    <li className='mb-1'>space : 다음 단어로 이동</li>
+                    <li className='mb-7'>command/ctrl + backspace : 이전 단어로 이동</li>
+                  </ul>
+
+                  {/* Close button */}
+                  <div className='mt-7 mb-3'>
+                    <button className="rounded-lg bg-purple-heavy p-2 text-white mr-3" onClick={() => setShowPopup(false)}>
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          <div className='w-full h-full p-4 text-lg border border-gray-300 rounded'>
+            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+              {transcript.split(" ").map((word, index) => (
+                <input
+                  className='bg-gray-100'
+                  key={index}
+                  type="text"
+                  value={userAnswer[index] || ''} // Use an empty string if undefined
+                  onChange={(e) => handleInput(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyPress(e, index)}
+                  style={{ margin: "5px", width: `${word.length}ch` }} // Adjust input width to fit the word
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }} // Store input reference
+                  onFocus={() => {
+                    // Optional: Select input text on focus
+                    inputRefs.current[index]?.select();
+                  }}
+                />
+              ))}
+            </pre>
+          </div>
         </div>
+
         <div className='flex flex-col w-[40%] h-full px-5 center items-center justify-center'>
           {isYouTubeVideo ? (
             <iframe
@@ -151,7 +188,7 @@ const DictationPageContent: React.FC = () => {
               allowFullScreen
             ></iframe>
           ) : isAudioFile ? (
-            <audio ref={audioRef} controls src={audioUrl} className='w-full max-w-lg'>
+            <audio ref={audioRef} controls src={audioUrl} className='w-[70%] max-w-lg'>
               Your browser does not support the audio element.
             </audio>
           ) : (
