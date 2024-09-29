@@ -70,6 +70,15 @@ const DictationPageContent: React.FC = () => {
       if (nextIndex < userAnswer.length) {
         inputRefs.current[nextIndex]?.focus();
       }
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'Backspace') { // command/ctrl + backspace
+      // switch(e.key) {
+      //   case 'ArrowRight':
+      e.preventDefault();
+      const prevIndex = index - 1;
+      if (prevIndex >= 0) {
+        inputRefs.current[prevIndex]?.focus();
+      // }
+      }
     }
   };
 
@@ -113,6 +122,7 @@ const DictationPageContent: React.FC = () => {
           <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
             {transcript.split(" ").map((word, index) => (
               <input
+                className='bg-gray-100'
                 key={index}
                 type="text"
                 value={userAnswer[index] || ''} // Use an empty string if undefined
