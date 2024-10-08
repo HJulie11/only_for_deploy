@@ -1,9 +1,9 @@
 // /frontend/app/level-selection/page.tsx
 "use client";
 import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
+import React, { Suspense } from 'react';
 
-const LevelSelectionPage = () => {
+const LevelSelectionPageContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -26,5 +26,17 @@ const LevelSelectionPage = () => {
     </div>
   );
 };
+
+const LevelSelectionPage = () => {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LevelSelectionPageContent />
+        </Suspense>
+    );
+}
+
+LevelSelectionPage.getLayout = function getLayout(page: React.ReactNode) {
+    return page;
+}
 
 export default LevelSelectionPage;
