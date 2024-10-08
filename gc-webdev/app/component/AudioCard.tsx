@@ -15,6 +15,7 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
   const router = useRouter();
   const { url } = useContext(storeContext);
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const userId = LocalStorage.getItem('userId') || '';
 
   const handleTranscriptClick = () => {
     setShowTranscriptModal(true);
@@ -22,9 +23,13 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
 
   console.log(fileDisplayName); // Add this inside AudioCard component to see the file object
 
+  // const handleClick = () => {
+  //   // Navigate to DictationPage with fileStorageName as a query parameter
+  //   router.push(`/dictation?fileStorageName=${encodeURIComponent(fileStorageName)}&cardType=audio`);
+  // };
+
   const handleClick = () => {
-    // Navigate to DictationPage with fileStorageName as a query parameter
-    router.push(`/dictation?fileStorageName=${encodeURIComponent(fileStorageName)}&cardType=audio`);
+    router.push(`/levelselection?fileStorageName=${encodeURIComponent(fileStorageName)}&cardType=audio&url=${encodeURIComponent(url)}&userId=${userId}`);
   };
 
   const handleTranscriptUpload = async (transcript: string) => {

@@ -13,12 +13,14 @@ const DictationPageContent: React.FC = () => {
   const url = searchParams.get('url') ?? '';
   const key = searchParams.get('key') ?? '';
   const fileStorageName = searchParams.get('fileStorageName') ?? '';
+  const level = searchParams.get('level') ?? 'full_blank';
   const cardType = searchParams.get('cardType') ?? '';
   const userId = searchParams.get('userId') ?? '';
 
   const [transcript, setTranscript] = useState<string>('');
   const [userAnswer, setUserAnswer] = useState<string[]>([]);
   const [showPopup, setShowPopup] = useState(false); // State to show/hide the popup
+  const [initialBlanks, setInitialBlanks] = useState<string[]>([]);
 
   const { url: apiUrl } = useContext(storeContext);
   const router = useRouter();
@@ -51,11 +53,43 @@ const DictationPageContent: React.FC = () => {
       }
 
       setTranscript(fetchedTranscript);
-      setUserAnswer(Array(fetchedTranscript.split(/\s+/).length).fill(''));
+      
+      // Adjust blanks based on the selected level
+      const words = fetchedTranscript.split(/\s+/);
+      // let blanks = words.map(() => '');
+      let blanks = [...words];
+
+      if (level === 'full') {
+        blanks = Array(words.length).fill('');
+      } else {
+        const blankFrequency = parseInt(level);
+        blanks = words.map((word, index) => (index % blankFrequency === 0 ? '' : word));
+      }
+
+      // switch (level) {
+      //   case '1_blank_per_15_words':
+      //     blanks = words.map((word, index) => (index % 15 === 0 ? '' : word));
+      //     break;
+      //   case '1_blank_per_10_words':
+      //     blanks = words.map((word, index) => (index % 10 === 0 ? '' : word));
+      //     break;
+      //   case '1_blank_per_5_words':
+      //     blanks = words.map((word, index) => (index % 5 === 0 ? '' : word));
+      //     break;
+      //   case 'full_blank':
+      //   default:
+      //     blanks = words.map(() => '');
+      //     break;
+      // }
+
+      // setUserAnswer(Array(fetchedTranscript.split(/\s+/).length).fill(''));
+      //Store the initial blank state
+      setInitialBlanks(blanks.map((word) => word === '' ? '' : word));
+      setUserAnswer(blanks);
     };
 
     fetchTranscript();
-  }, [audioUrl, fileStorageName]);
+  }, [audioUrl, fileStorageName, level]);
 
   const handleInput = (index: number, value: string) => {
     const updatedInput = [...userAnswer];
@@ -66,7 +100,10 @@ const DictationPageContent: React.FC = () => {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === ' ') {
       e.preventDefault();
-      const nextIndex = index + 1;
+      let nextIndex = index + 1;
+      while (nextIndex < userAnswer.length && userAnswer[nextIndex] !== '') {
+        nextIndex++;
+      }
 
       // Move to the next word, even if it's on the next line or paragraph
       if (nextIndex < userAnswer.length) {
@@ -76,10 +113,14 @@ const DictationPageContent: React.FC = () => {
       // switch(e.key) {
       //   case 'ArrowRight':
       e.preventDefault();
-      const prevIndex = index - 1;
+
+      let prevIndex = index - 1;
+      while (prevIndex >= 0 && initialBlanks[prevIndex] !== '') {
+        prevIndex--;
+      }
+  
       if (prevIndex >= 0) {
         inputRefs.current[prevIndex]?.focus();
-      // }
       }
     }
   };
@@ -153,11 +194,11 @@ const DictationPageContent: React.FC = () => {
               </div>
             </>
           )}
-          <div className='w-full h-full p-4 text-lg border border-gray-300 rounded'>
+          <div className='w-full h-full p-4 text-lg border border-gray-300 rounded overflow-hidden overflow-y-scroll'>
             <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
               {transcript.split(" ").map((word, index) => (
                 <input
-                  className='bg-gray-100'
+                  className='bg-gray-100 rounded'
                   key={index}
                   type="text"
                   value={userAnswer[index] || ''} // Use an empty string if undefined

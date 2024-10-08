@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -23,6 +23,8 @@ const CorrectionPageContent = () => {
   const [editableWords, setEditableWords] = useState<Set<number>>(new Set());
   const [editedIncorrectWords, setEditedIncorrectWords] = useState<Set<number>>(new Set());
   const [isAllCorrected, setIsAllCorrected] = useState<boolean>(false);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const normalizeApostrophes = (text: string) => {
     return text.replace(/[’‘]/g, "'"); // Replace smart quotes with standard apostrophe
@@ -83,6 +85,34 @@ const CorrectionPageContent = () => {
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      let nextIndex = index + 1;
+      while (nextIndex < userAnswer.length && userAnswer[nextIndex] !== '') {
+        nextIndex++;
+      }
+
+      // Move to the next word, even if it's on the next line or paragraph
+      if (nextIndex < userAnswer.length) {
+        inputRefs.current[nextIndex]?.focus();
+      }
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'Backspace') { // command/ctrl + backspace
+      // switch(e.key) {
+      //   case 'ArrowRight':
+      e.preventDefault();
+
+      let prevIndex = index - 1;
+      while (prevIndex >= 0 && !editableWords.has(prevIndex)) {
+        prevIndex--;
+      }
+  
+      if (prevIndex >= 0) {
+        inputRefs.current[prevIndex]?.focus();
+      }
+    }
+  };
+
   const handleInputChange = (index: number, value: string) => {
     const newCorrectedWords = [...correctedWords];
     newCorrectedWords[index] = value;
@@ -116,6 +146,7 @@ const CorrectionPageContent = () => {
               return (
                 <span
                   key={index}
+                  className="bg-gray-100 rounded"
                   style={{
                     display: "inline-block",
                     margin: "5px",
@@ -125,8 +156,13 @@ const CorrectionPageContent = () => {
                   {isEditable ? (
                     <input
                       type="text"
+                      className="bg-gray-100 rounded"
                       value={correctedWords[index]}
+                      onKeyDown={(e) => handleKeyPress(e, index)}
                       onChange={(e) => handleInputChange(index, e.target.value)}
+                      ref = {(el) => {
+                        inputRefs.current[index] = el;
+                      }} // Store input reference
                       onFocus={(e) => e.target.select()}
                       style={{ width: `${word.length}ch` }}
                       onBlur={() => handleWordClick(index)} // Save and blur input
