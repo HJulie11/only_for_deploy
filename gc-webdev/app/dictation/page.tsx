@@ -253,7 +253,7 @@ const DictationPageContent: React.FC = () => {
             <p>No content available</p>
           )}
           
-          {/* <Link
+          <Link
             href={{
               pathname: "/correction",
               query: { url, userAnswer: JSON.stringify(userAnswer), cardType, fileStorageName, userId, transcript },
@@ -261,13 +261,13 @@ const DictationPageContent: React.FC = () => {
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
           >
             <p>제출하기</p>
-          </Link> */}
-          <button
+          </Link>
+          {/* <button
             onClick={handleSubmit}
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
           >
             <p>제출하기</p>
-          </button>
+          </button> */}
         </div>
       </div>
     </>
