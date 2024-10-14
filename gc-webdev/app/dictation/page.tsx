@@ -97,23 +97,6 @@ const DictationPageContent: React.FC = () => {
     setUserAnswer(updatedInput);
   };
 
-  const handleSubmit = () => {
-    const queryString = new URLSearchParams({
-      url,
-      userAnswer: JSON.stringify(userAnswer), // Convert userAnswer array to a string
-      cardType,
-      fileStorageName,
-      userId,
-      transcript
-    }).toString();
-
-    if (userAnswer.length && transcript.length) {
-      router.push(`/correction?${queryString}`);
-    } else {
-      return () => {if(!queryString) return <p>데이터를 조회중입니다..</p>}
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === ' ') {
       e.preventDefault();
@@ -262,12 +245,6 @@ const DictationPageContent: React.FC = () => {
           >
             <p>제출하기</p>
           </Link>
-          {/* <button
-            onClick={handleSubmit}
-            className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
-          >
-            <p>제출하기</p>
-          </button> */}
         </div>
       </div>
     </>
