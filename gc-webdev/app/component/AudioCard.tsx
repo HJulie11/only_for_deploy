@@ -52,6 +52,12 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
   }
 
   useEffect(() => {
+
+    if (!url) {
+      console.error('URL not found in store context');
+      return;
+    }
+
     const fakeUpload = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
