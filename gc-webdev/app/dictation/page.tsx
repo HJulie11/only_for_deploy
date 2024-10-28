@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { storeContext } from '../context/storeContext';
 import axios from 'axios';
 import LocalStorage from '../../constants/localstorage';
+import { quartersInYear } from 'date-fns/constants';
 
 const DictationPageContent: React.FC = () => {
   const searchParams = useSearchParams();
@@ -42,14 +43,21 @@ const DictationPageContent: React.FC = () => {
           fetchedTranscript = data.transcript || '';
         }
       } else if (isAudioFile) {
-        const token = LocalStorage.getItem("token");
-        if (!token) return;
+        // const token = LocalStorage.getItem("token");
+        // if (!token) return;
 
-        const response = await axios.get(`${apiUrl}/api/user/audio-transcript`, {
-          headers: { token },
-          params: { userId, fileStorageName },
-        });
-        fetchedTranscript = response.data.transcript || '';
+        try {
+          const token = LocalStorage.getItem("token");
+          const response = await axios.get(`${apiUrl}/api/user/audio-transcript`, {
+            headers: { token },
+            params: { userId, fileStorageName },
+          });
+          fetchedTranscript = response.data.transcript || '';
+
+          if (!token) throw new Error("User token not found in localStorage");
+        } catch (error) {
+          console.error("LocalStorage access error:", error);
+        }
       }
 
       setTranscript(fetchedTranscript);
@@ -66,24 +74,6 @@ const DictationPageContent: React.FC = () => {
         blanks = words.map((word, index) => (index % blankFrequency === 0 ? '' : word));
       }
 
-      // switch (level) {
-      //   case '1_blank_per_15_words':
-      //     blanks = words.map((word, index) => (index % 15 === 0 ? '' : word));
-      //     break;
-      //   case '1_blank_per_10_words':
-      //     blanks = words.map((word, index) => (index % 10 === 0 ? '' : word));
-      //     break;
-      //   case '1_blank_per_5_words':
-      //     blanks = words.map((word, index) => (index % 5 === 0 ? '' : word));
-      //     break;
-      //   case 'full_blank':
-      //   default:
-      //     blanks = words.map(() => '');
-      //     break;
-      // }
-
-      // setUserAnswer(Array(fetchedTranscript.split(/\s+/).length).fill(''));
-      //Store the initial blank state
       setInitialBlanks(blanks.map((word) => word === '' ? '' : word));
       setUserAnswer(blanks);
     };
@@ -95,6 +85,28 @@ const DictationPageContent: React.FC = () => {
     const updatedInput = [...userAnswer];
     updatedInput[index] = value;
     setUserAnswer(updatedInput);
+  };
+
+  const handleSubmit = () => {
+    const queryString = new URLSearchParams({
+      url,
+      userAnswer: JSON.stringify(userAnswer), // Convert userAnswer array to a string
+      cardType,
+      fileStorageName,
+      userId,
+      transcript
+    }).toString();
+
+    sessionStorage.setItem("userAnswer", JSON.stringify(userAnswer));
+    sessionStorage.setItem("transcript", transcript);
+
+    if (userAnswer.length && transcript.length) {
+      console.log("Navigating to correction page with data:", queryString);
+      router.push(`/correction?url=${url}&cardType=${cardType}&fileStorageName=${fileStorageName}&userId=${userId}`);
+    } else {
+      console.log("submit failed : useranswer or transcript is empty");
+      return () => {if(!queryString) return <p>데이터를 조회중입니다..</p>}
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -236,7 +248,7 @@ const DictationPageContent: React.FC = () => {
             <p>No content available</p>
           )}
           
-          <Link
+          {/* <Link
             href={{
               pathname: "/correction",
               query: { url, userAnswer: JSON.stringify(userAnswer), cardType, fileStorageName, userId, transcript },
@@ -244,7 +256,13 @@ const DictationPageContent: React.FC = () => {
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
           >
             <p>제출하기</p>
-          </Link>
+          </Link> */}
+          <button
+            onClick={handleSubmit}
+            className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
+          >
+            <p>제출하기</p>
+          </button>
         </div>
       </div>
     </>
