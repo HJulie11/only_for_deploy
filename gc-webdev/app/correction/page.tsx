@@ -17,8 +17,7 @@ const debounce = (func: Function, delay: number) => {
 const CorrectionPageContent = () => {
   const searchParams = useSearchParams();
   const transcript = searchParams.get("transcript")?.split(" ") || [];
-  const userAnswerParam = searchParams.get("userAnswer");
-  // const userAnswer = JSON.parse(searchParams.get("userAnswer") || "[]");
+  const userAnswerParam = searchParams.get("userAnswer") || "[]";
   const userAnswer = userAnswerParam ? JSON.parse(userAnswerParam) : [];
 
   const [correctedWords, setCorrectedWords] = useState<string[]>(userAnswer);

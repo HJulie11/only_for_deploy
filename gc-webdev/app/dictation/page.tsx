@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { storeContext } from '../context/storeContext';
 import axios from 'axios';
 import LocalStorage from '../../constants/localstorage';
-import { quartersInYear } from 'date-fns/constants';
 
 const DictationPageContent: React.FC = () => {
   const searchParams = useSearchParams();
@@ -45,6 +44,13 @@ const DictationPageContent: React.FC = () => {
       } else if (isAudioFile) {
         // const token = LocalStorage.getItem("token");
         // if (!token) return;
+
+
+        // const response = await axios.get(`${apiUrl}/api/user/audio-transcript`, {
+        //   headers: { token },
+        //   params: { userId, fileStorageName },
+        // });
+        // fetchedTranscript = response.data.transcript || '';
 
         try {
           const token = LocalStorage.getItem("token");
@@ -254,10 +260,8 @@ const DictationPageContent: React.FC = () => {
               query: { url, userAnswer: JSON.stringify(userAnswer), cardType, fileStorageName, userId, transcript },
             }}
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
-          >
-            <p>제출하기</p>
-          </Link> */}
-          <button
+          > */}
+          <button 
             onClick={handleSubmit}
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
           >
