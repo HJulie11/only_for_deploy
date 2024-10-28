@@ -204,8 +204,6 @@ const CorrectionPageContent = () => {
   );
 };
 
-CorrectionPageContent.displayName = "CorrectionPageContent";
-
 const CorrectionPage = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -217,7 +215,5 @@ const CorrectionPage = () => {
 CorrectionPage.getLayout = function getLayout(page: React.ReactNode) {
   return page;
 };
-
-CorrectionPage.displayName = "CorrectionPage";
 
 export default CorrectionPage;
