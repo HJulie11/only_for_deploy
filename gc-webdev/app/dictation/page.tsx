@@ -273,6 +273,8 @@ const DictationPageContent: React.FC = () => {
   );
 }
 
+DictationPageContent.displayName = 'DictationPageContent';
+
 const DictationPage = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -284,5 +286,7 @@ const DictationPage = () => {
 DictationPage.getLayout = function getLayout(page: React.ReactNode) {
   return page;
 };
+
+DictationPage.displayName = 'DictationPage';
 
 export default DictationPage;
