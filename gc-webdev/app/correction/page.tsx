@@ -18,7 +18,8 @@ const CorrectionPageContent = () => {
   const searchParams = useSearchParams();
   const transcript = searchParams.get("transcript")?.split(" ") || [];
   const userAnswerParam = searchParams.get("userAnswer") || "[]";
-  const userAnswer = userAnswerParam ? JSON.parse(userAnswerParam) : [];
+  // const userAnswer = userAnswerParam ? JSON.parse(userAnswerParam) : [];
+  const userAnswer = JSON.parse(userAnswerParam);
 
   const [correctedWords, setCorrectedWords] = useState<string[]>(userAnswer);
   const [editableWords, setEditableWords] = useState<Set<number>>(new Set());
