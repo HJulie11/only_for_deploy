@@ -34,7 +34,7 @@ const loginAdmin = async (req,res) => {
 
 // REGISTER ADMIN
 const registerAdmin = async (req, res) => {
-    const { adminname, email, password, mobilenumber, address, position, registerDate, institute, group, studentlist, studentnumber, groupadmin } = req.body;
+    const { adminname, email, password, mobilenumber, address, institute, group } = req.body;
     
     try {
         // Access uploaded files
@@ -69,18 +69,18 @@ const registerAdmin = async (req, res) => {
         const formattedDate = `${currentDate.getFullYear()}.${(currentDate.getMonth() + 1).toString().padStart(2, '0')}.${currentDate.getDate().toString().padStart(2, '0')}`;
 
         const newAdmin = new adminModel({
-            adminname: adminname,
-            email: email,
+            adminname,
+            email,
             password: hashedPassword,
-            mobilenumber: mobilenumber,
-            address: address,
-            position: position,
-            registerDate: registerDate,
-            institute: institute,
-            group: group,
-            studentlist: studentlist || [],
+            mobilenumber,
+            address,
+            position: '총괄관리자',
+            registerDate: formattedDate,
+            institute,
+            group,
+            studentlist: [],
             studentnumber: 0,
-            groupadmin: groupadmin || []
+            groupadmin: []
         });
 
         // Save Admin
@@ -151,6 +151,8 @@ const registerUsers = async (users, group) => {
                 address: user.address,
                 institute: user.institute,
                 group: group,
+                Image: user.image,
+                audioList: []
             });
             await newUser.save();
         } catch (error) {
@@ -174,6 +176,9 @@ const registerAdmins = async (admins, institute) => {
                 registerDate: new Date().toISOString(),
                 institute: institute,
                 group: admin.group,
+                studentlist: [],
+                studentnumber: 0,
+                groupadmin: []
             });
             await newAdmin.save();
         } catch (error) {

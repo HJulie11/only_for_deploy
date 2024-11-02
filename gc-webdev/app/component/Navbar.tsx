@@ -1,20 +1,20 @@
-"use client"
-import React, { useState, useContext, useEffect } from 'react';
-import { storeContext } from '../context/storeContext';
-import { NAV_LINKS } from '@/constants';
-import Image from 'next/image';
-import Link from 'next/link';
-import Button from './Button';
-import Logo from '@/public/Logo.svg';
-import MenuBars from '@/public/menu.svg';
-import DropdownButton from './DropdownButton';
-import LocalStorage from '@/constants/localstorage';
+"use client";
+import React, { useState, useEffect } from "react";
+import { NAV_LINKS } from "@/constants";
+import Image from "next/image";
+import Link from "next/link";
+import Button from "./Button";
+import Logo from "@/public/Logo.svg";
+import MenuBars from "@/public/menu.svg";
+import DropdownButton from "./DropdownButton";
 
-const Navbar: React.FC = () => {
-  const { token, setToken } = useContext(storeContext);
+interface NavbarProps {
+  isLoggedIn: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ isLoggedIn }) => {
   const [isNavVisible, setIsNavVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const localToken = LocalStorage.getItem('token');
 
   const toggleNav = () => {
     setIsNavVisible(!isNavVisible);
@@ -22,21 +22,14 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     setIsMounted(true);
-    if (localToken) {
-      setToken(localToken);
-      console.log('Token found in localStorage:', localToken);
-    }
-  }, [localToken, setToken]);
+  }, []);
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setToken('');
-    window.location.href = '/';
+    localStorage.removeItem("token");
+    window.location.href = "/";
   };
 
-  if (!isMounted) {
-    return null; // Ensures the component does not render until mounted
-  }
+  if (!isMounted) return null;
 
   return (
     <>
@@ -53,7 +46,7 @@ const Navbar: React.FC = () => {
 
         <div
           className={`${
-            isNavVisible ? '' : 'hidden'
+            isNavVisible ? "" : "hidden"
           } fixed right-0 top-0 h-screen w-2/3 bg-white rounded shadow-lg z-30`}
         >
           <ul className="h-full gap-12 lg:flex">
@@ -67,20 +60,20 @@ const Navbar: React.FC = () => {
               </Link>
             ))}
 
-            {localToken ? (
+            {isLoggedIn ? (
               <div>
                 <Link
-                  href = "/profile"
+                  href="/profile"
                   className="regular-16 text-gray-50 mt-28 flexCenter cursor-pointer pb-1.5 transition-all hover:font-bold"
-                > 
-                  Profile 
+                >
+                  Profile
                 </Link>
                 <Link
-                  href = "/"
+                  href="/"
                   className="regular-16 text-gray-50 mt-28 flexCenter cursor-pointer pb-1.5 transition-all hover:font-bold"
                   onClick={logout}
-                > 
-                  Logout 
+                >
+                  Logout
                 </Link>
               </div>
             ) : (
@@ -93,7 +86,7 @@ const Navbar: React.FC = () => {
           </ul>
         </div>
 
-        <div className={`sm:${!isNavVisible ? '' : 'hidden'} center items-center h-[100px]`}>
+        <div className={`sm:${!isNavVisible ? "" : "hidden"} center items-center h-[100px]`}>
           <ul className="hidden h-full gap-12 lg:flex">
             {NAV_LINKS.map((link) => (
               <Link
@@ -105,20 +98,20 @@ const Navbar: React.FC = () => {
               </Link>
             ))}
 
-            {localToken ? (
+            {isLoggedIn ? (
               <div className="regular-16 mt-3 flexCenter cursor-pointer pb-1.5 transition-all hover:font-bold">
-                <DropdownButton 
-                  buttonText="My Account" 
+                <DropdownButton
+                  buttonText="My Account"
                   items={[
-                    { label: 'Profile', href:'/profile'},
-                    { label: 'Log out', href:'#', onClick: logout}
+                    { label: "Profile", href: "/profile" },
+                    { label: "Log out", href: "#", onClick: logout },
                   ]}
                 />
               </div>
             ) : (
               <div className="lg:flexCenter hidden">
                 <Link href="/login">
-                  <Button type="button" title="Login" variant="btn_dark_green"/>
+                  <Button type="button" title="Login" variant="btn_dark_green" />
                 </Link>
               </div>
             )}
