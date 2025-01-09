@@ -30,6 +30,7 @@ const AdminLogin: React.FC = () => {
       if (response.data.success) {
         setToken(response.data.token)
         localStorage.setItem('token', response.data.token)
+        localStorage.setItem('email', data.email);
         console.log('Token set in localStorage:', response.data.token)
         router.push('/adminhome')
       } else {

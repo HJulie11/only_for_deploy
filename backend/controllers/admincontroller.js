@@ -24,7 +24,7 @@ const loginAdmin = async (req,res) => {
         }
 
         // CREATE TOKEN IF PASSWORD MATCHES
-        const token = createToken(admin._id);
+        const token = createToken(admin._id, admin.email);
         res.json({success:true, token, name, email});
     } catch (error) {
         console.log(error);
@@ -33,10 +33,10 @@ const loginAdmin = async (req,res) => {
 }
 
 // REGISTER ADMIN
-const registerAdmin = async (req, res) => {
-    const { adminname, email, password, mobilenumber, address, institute, group } = req.body;
-    
+const registerAdmin = async (req, res) => {    
     try {
+        const { adminname, email, password, mobilenumber, address, institute, group } = req.body;
+
         // Access uploaded files
         const studentlistFile = req.files['studentlist'] ? req.files['studentlist'][0] : null;
         const groupadminFile = req.files['groupadmin'] ? req.files['groupadmin'][0] : null;

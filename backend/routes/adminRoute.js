@@ -1,6 +1,7 @@
 import express from 'express'; 
 import { loginAdmin, registerAdmin } from '../controllers/admincontroller.js';
 import adminModel from '../models/adminmodel.js';
+import userModel from '../models/usermodel.js';
 import multer from 'multer';
 import authMiddleware from '../middleware/auth.js';
 
@@ -20,36 +21,56 @@ const upload = multer({ storage: storage });
 adminRouter.post('/register', upload.fields([{ name: 'studentlist', maxCount: 1 }, { name: 'groupadmin' , maxCount: 1 }]), registerAdmin);
 adminRouter.post('/login', loginAdmin);
 adminRouter.get('/myaccount', authMiddleware, async (req, res) => {
-    try {
-      const userId = req.body.userId;
-      console.log('Fetching user details for user:', userId);
-      if (!userId) {
-        return res.status(400).json({ error: 'User ID is missing' });
-      }
-      const user = await adminModel.findById(userId);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      console.log('User found:', user);
-      res.status(200).json({ success:true, 
-        adminname: user.adminname,
-        email: user.email,
-        mobilenumber: user.mobilenumber,
-        address: user.address,
-        position: user.position,
-        registerDate: user.registerDate,
-        institute: user.institute,
-        group: user.group,
-        studentlist: user.studentlist,
-        studentnumber: user.studentnumber,
-        groupadmin: user.groupadmin
-       });
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      res.status(500).json({ error: 'Server error' });
+  try {
+    const userId = req.body.userId;
+    console.log('Fetching user details for user:', userId);
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is missing' });
     }
-  });
+    const user = await adminModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('User found:', user);
+    res.status(200).json({ success:true, 
+      adminname: user.adminname,
+      email: user.email,
+      mobilenumber: user.mobilenumber,
+      address: user.address,
+      position: user.position,
+      registerDate: user.registerDate,
+      institute: user.institute,
+      group: user.group,
+      studentlist: user.studentlist,
+      studentnumber: user.studentnumber,
+      groupadmin: user.groupadmin
+      });
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+adminRouter.get('/getallusers', async (req, res) => {
+  try {
+    const users = await userModel.find({});
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+adminRouter.get('/getalladmins', async (req, res) => {
+  try {
+    const admins = await adminModel.find({});
+    res.json(admins);
+  } catch (err) {
+    console.error('Error fetching admins:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
 //TODO: upload audio file for user
 
 export default adminRouter;

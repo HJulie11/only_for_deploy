@@ -17,7 +17,13 @@ export const ADMIN_NAV_LINKS = [
   { href: '/adminhome', key: 'home', label: '🏠' },
   { href: '/studentadmin', key: '학생 관리', label: '학생 관리' },
   { href: '/adminaccount', key: '관리자 계정', label: '계정 정보' },
-  
+];
+
+export const ALL_ADMIN_NAV_LINKS = [
+  { href: '/adminhome', key: 'home', label: '🏠' },
+  { href: '/usersall', key: '학생 관리', label: '전체 학생 관리' },
+  { href: '/adminsall', key: '관리자 관리', label: '전체 관리자 관리' },
+  { href: '/adminaccount', key: '관리자 계정', label: '계정 정보' },
 ];
 
 // CAMP SECTION

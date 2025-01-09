@@ -1,7 +1,7 @@
 "use client"
 import React, { useContext, useEffect, useState } from "react";
 import { storeContext } from "../context/storeContext";
-import { ADMIN_NAV_LINKS } from "@/constants";
+import { ADMIN_NAV_LINKS, ALL_ADMIN_NAV_LINKS } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/public/Logo.svg";
@@ -14,6 +14,7 @@ const AdminNavbar: React.FC = () => {
   const { token, setToken } = useContext(storeContext);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const localToken = LocalStorage.getItem("token");
 
   const toggleNav = () => {
@@ -21,6 +22,11 @@ const AdminNavbar: React.FC = () => {
   };
 
   useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    if (storedEmail) {
+      setUserEmail(storedEmail);
+    }
+    
     setIsMounted(true);
     if (localToken) {
       setToken(localToken);
@@ -37,6 +43,9 @@ const AdminNavbar: React.FC = () => {
   if (!isMounted) {
     return null; // Ensures the component does not render until mounted
   }
+
+  const navLinks =
+    userEmail === "adminforall@example.com" ? ALL_ADMIN_NAV_LINKS : ADMIN_NAV_LINKS;
 
   return (
     <>
@@ -57,7 +66,7 @@ const AdminNavbar: React.FC = () => {
           } fixed right-0 top-0 h-screen w-2/3 bg-white rounded shadow-lg z-30`}
         >
           <ul className="h-full gap-12 lg:flex">
-            {ADMIN_NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.label}
                 className="regular-16 text-gray-50 mt-28 flexCenter cursor-pointer pb-1.5 transition-all hover:font-bold"
@@ -95,7 +104,7 @@ const AdminNavbar: React.FC = () => {
 
         <div className={`sm:${!isNavVisible ? "" : "hidden"} center items-center h-[100px]`}>
             <ul className="hidden h-full gap-12 lg:flex">
-                {ADMIN_NAV_LINKS.map((link) => (
+                {navLinks.map((link) => (
                     <Link
                         key={link.label}
                         className="regular-16 text-gray-50 mt-3 flexCenter cursor-pointer pb-1.5 transition-all hover:font-bold"
@@ -106,14 +115,13 @@ const AdminNavbar: React.FC = () => {
                 ))}
 
                 {localToken ? (
-                  <div className="regular-16 mt-3 flexCenter cursor-pointer pb-1.5 transition-all hover:font-bold">
-                    <DropdownButton 
-                      buttonText="My Account" 
-                      items={[
-                        { label: 'Profile', href:'/adminaccount'},
-                        { label: 'Log out', href:'#', onClick: logout}
-                      ]}
-                    />
+                  <div className="regular-16 mt-3 flexCenter cursor-pointer pb-1.5 transition-all ">
+                    <button 
+                      type="button"
+                      title="Logout"
+                      className="hover:bg-gray-10 px-5 py-5 rounded-lg transition-all"
+                      onClick={logout}
+                    >Logout</button>
                   </div>
                 ) : (
                   <div className="lg:flexCenter hidden">

@@ -16,15 +16,15 @@ const port = 4000
 app.use(express.json())
 
 const corsOptions = {
-    origin: 'https://www.gyeongcheong.com',
+    origin: ['https://www.gyeongcheong.com', 'http://localhost:3000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204
   };
   
 app.use(cors(corsOptions));
-
 // app.use(cors())
+
 app.use(express.static('uploads'));
 
 // Middleware to parse JSON bodies
@@ -35,6 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // character encoding
 app.use((req, res, next) => {
+    console.log("Request Headers:", req.headers);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     next();
   });

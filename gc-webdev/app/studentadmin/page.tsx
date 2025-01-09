@@ -1,7 +1,7 @@
 import React from 'react'
 import AdminNavbar from '../component/AdminNavbar'
 import AdminMainLayout from '../component/AdminMainLayout'
-import AdminHome from '../component/AdminHome'
+import AdminHomeComponent from '../component/AdminHome'
 import StudentAdmin from '../component/StudentAdmin'
 
 const page = () => {
