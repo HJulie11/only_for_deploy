@@ -20,7 +20,7 @@ const Register: React.FC = () => {
     dateofbirth: '',
     mobilenumber: '',
     gender: '',
-    address: '',
+    address: ''
   });
   const [error, setError] = useState('');
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);

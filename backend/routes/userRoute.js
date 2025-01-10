@@ -37,6 +37,8 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
   try {
     const userId = req.body.userId; // Pass User ID in the body
     const file = req.file;
+    const progress = req.body.progress || 0;
+    const dateRecorded = req.body.dateRecorded || null;
 
     if (!file) {
       return res.status(400).send('No file uploaded');
@@ -53,6 +55,7 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
     // const fileStorageName = file.filename;
     // const fileStorageName = `/uploads/${file.filename}`;
     const fileStorageName = `${crypto.randomBytes(16).toString('hex')}_${Date.now()}${fileExtension}`;
+
 
     // S3 upload parameters
     const params = {
@@ -79,6 +82,8 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
       },
     }, { new: true });
 
+    console.log('Updated user:', updatedUser);
+
     if (!updatedUser) {
       return res.status(404).send('User not found');
     }
@@ -91,7 +96,7 @@ userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, asy
   }
 });
 
-// , upload.single('transcript')
+// , upload.single('transcript') //TODO: change this to put request
 userRouter.post('/upload-transcript', authMiddleware, async (req, res) => {
   try {
     const { userId, fileStorageName, transcript } = req.body;
@@ -236,6 +241,34 @@ userRouter.get('/myaccount', authMiddleware, async (req, res) => {
      });
   } catch (error) {
     console.error('Error fetching user details:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+userRouter.put('/audio-progress/:userId/:audioId', authMiddleware, async (req, res) => {
+  const { userId, audioId } = req.params;
+  const { progress } = req.body;
+
+  try {
+    const user = await usermodel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const audioFile = user.audioList.id(audioId);
+    if (!audioFile) {
+      return res.status(404).json({ error: 'Audio file not found' });
+    }
+
+    audioFile.progress = progress;
+    if (progress === '100') {
+      audioFile.dateRecorded = new Date();
+    }
+
+    await user.save();
+    res.status(200).json({ success: true, message: 'Progress updated successfully' });
+  } catch (error) {
+    console.error('Error updating progress:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

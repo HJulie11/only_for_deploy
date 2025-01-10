@@ -45,7 +45,9 @@ const userSchema = new mongoose.Schema({
         fileDisplayName: String,  // Original file name for display
         fileStorageName: String,  // AWS S3 file key (storage name)
         url: String,              // AWS S3 file URL for playback
-        transcript: String        // Transcript of the audio
+        transcript: String,        // Transcript of the audio
+        progress: { type: Number, default: 0 }, // Progress in percentage (e.g., 0 to 100)
+        dateRecorded: { type: Date }
     }]
 }, {minimize: false});
 

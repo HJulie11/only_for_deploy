@@ -36,9 +36,13 @@ const Page = () => {
         console.error('Failed to upload files:', response.data.message);
       }
     } catch (error) {
-      console.error('Error uploading files:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Error uploading files:', error.message, error.response);
+      } else {
+        console.error('Error uploading files:', error);
+      }
     }
-    window.location.reload();
+    // window.location.reload();
   };
 
   return (
