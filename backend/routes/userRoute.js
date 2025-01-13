@@ -288,7 +288,7 @@ userRouter.post('/update-progress', authMiddleware, async (req, res) => {
     await usermodel.findOneAndUpdate(
       { _id: userId, 'audioList.fileStorageName': fileStorageName },
       { $set: { 'audioList.$.progress': progress } },
-      { new : true }
+      // { new : true }
     );
 
     

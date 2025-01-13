@@ -1,7 +1,10 @@
 "use client"
-import React, { useEffect, useState, Suspense, useRef } from "react";
+import React, { useEffect, useState, Suspense, useRef, useContext } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import LocalStorage from "@/constants/localstorage";
+import axios from "axios";
+import {storeContext} from "../context/storeContext";
 
 const debounce = (func: Function, delay: number) => {
   let timeoutId: NodeJS.Timeout | undefined; // Declare timeoutId here
@@ -18,8 +21,11 @@ const CorrectionPageContent = () => {
   const searchParams = useSearchParams();
   const transcript = searchParams.get("transcript")?.split(" ") || [];
   const userAnswerParam = searchParams.get("userAnswer") || "[]";
+  const userId = searchParams.get("userId") || "";
+  const fileStorageName = searchParams.get("fileStorageName") ?? "";
   // const userAnswer = userAnswerParam ? JSON.parse(userAnswerParam) : [];
   const userAnswer = JSON.parse(userAnswerParam);
+  const { url: apiUrl } = useContext(storeContext);
 
   const [correctedWords, setCorrectedWords] = useState<string[]>(userAnswer);
   const [editableWords, setEditableWords] = useState<Set<number>>(new Set());
@@ -125,6 +131,35 @@ const CorrectionPageContent = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    console.log("Submitting progress update...");
+    console.log("User ID:", userId);
+    console.log("File Storage Name:", fileStorageName);
+    console.log("Progress:", 70);
+    try {
+      const token = LocalStorage.getItem('token');
+      const response = await axios.post(
+        `${apiUrl}/api/user/update-progress`,
+        {
+          userId,
+          fileStorageName,
+          progress: 70
+        },
+        {
+          headers: { token }
+        }
+      );
+
+      if (response.status === 200) {
+        console.log('Progress updated successfully!');
+      } else {
+        console.error('Failed to update progress.');
+      }
+    } catch (error) {
+      console.error('Failed to update progress:', error);
+    }
+  }
+
   const filteredCorrectWords = correctedWords
     .map((word, index) => {
       return editedIncorrectWords.has(index) ? `${word}*` : word; // Append '*' to edited words
@@ -194,6 +229,7 @@ const CorrectionPageContent = () => {
               pathname: "/reading",
               query: { correctedAnswers: JSON.stringify(filteredCorrectWords) },
             }}
+            onClick={handleSubmit}
             className={`flex w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg ${isAllCorrected ? 'bg-purple-middle' : 'bg-gray-400'} text-white`}
             style={{ pointerEvents: isAllCorrected ? 'auto' : 'none' }} // Disable click when not all corrected
           >

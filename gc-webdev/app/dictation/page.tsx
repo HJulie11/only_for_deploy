@@ -115,10 +115,6 @@ const DictationPageContent: React.FC = () => {
   //   }
   // };
   const handleSubmit = async () => {
-    console.log("Submitting progress update...");
-    console.log("User ID:", userId);
-    console.log("File Storage Name:", fileStorageName);
-    console.log("Progress:", 30);
     try {
       const token = LocalStorage.getItem("token");
       const response = await axios.post(
