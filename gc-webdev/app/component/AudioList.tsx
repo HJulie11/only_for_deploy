@@ -7,11 +7,11 @@ import { storeContext } from '../context/storeContext';
 interface AudioFile {
   fileDisplayName: string;
   fileStorageName: string;
+  progress?: number;
 }
 
 const AudioList: React.FC = () => {
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);  // Add state for userId
   const { url } = useContext(storeContext);
 
   useEffect(() => {
@@ -28,6 +28,27 @@ const AudioList: React.FC = () => {
             'token': token,
           },
         });
+
+        const files = response.data.audioFiles;
+
+        const filesWithProgress = await Promise.all(
+          files.map(async (file: AudioFile) => {
+            try {
+              const progressResponse = await axios.get(`${url}/api/user/audio-files`, {
+                headers: {
+                  'token': token,
+                },
+                params: {
+                  fileStorageName: file.fileStorageName,
+                },
+              });
+              return { ...file, progress: progressResponse.data.progress };
+            } catch (progressError) {
+              console.error(`Error fetching progress for ${file.fileStorageName}:`, progressError);
+              return file; //return the file without progress if an error occurs
+            }
+          })
+        );
 
         console.log(response)
 
@@ -47,7 +68,7 @@ const AudioList: React.FC = () => {
   return (
     <div>
       {audioFiles.map((file, index) => (
-        <AudioCard key={index} fileDisplayName={file.fileDisplayName} fileStorageName={file.fileStorageName}/>
+        <AudioCard key={index} fileDisplayName={file.fileDisplayName} fileStorageName={file.fileStorageName} progress={file.progress}/>
       ))}
     </div>
   );

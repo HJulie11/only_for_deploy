@@ -204,6 +204,7 @@ userRouter.get('/audio-transcript', authMiddleware, async (req, res) => {
 userRouter.get('/audio-files', authMiddleware, async (req, res) => {
   try {
     const userId = req.body.userId;
+    const fileStorageName = req.query.fileStorageName;
     console.log('Fetching audio files for user:', userId);
 
     if (!userId) {
@@ -213,6 +214,16 @@ userRouter.get('/audio-files', authMiddleware, async (req, res) => {
     const user = await usermodel.findById(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (fileStorageName) {
+      const audioFile = user.audioList.find(file => file.fileStorageName === fileStorageName);
+      if (!audioFile) {
+        return res.status(404).json({ error: 'Audio file not found' });
+      }
+
+      console.log('Audio file found:', audioFile);
+      return res.status(200).json({ success:true, audioFile });
     }
 
     console.log('User found:', user);
@@ -294,6 +305,31 @@ userRouter.post('/update-progress', authMiddleware, async (req, res) => {
     
     res.status(200).json({ success: true, message: 'Progress updated successfully' });
   } catch (error) {
+    res.status(500).json({ error: 'Server error', error });
+  }
+});
+
+userRouter.get('/get-progress', authMiddleware, async (req, res) => {
+  const { userId, fileStorageName } = req.query;
+
+  if (!userId || !fileStorageName) {
+    return res.status(400).json({ error: 'Missing userId or fileStorageName' });
+  }
+
+  try {
+    const user = await usermodel.findOne(
+      { _id: userId, 'audioList.fileStorageName': fileStorageName },
+      { 'audioList.$': 1 }
+    );
+
+    if (!user || !user.audioList || user.audioList.length === 0) {
+      return res.status(404).json({ error: 'User or audio file not found' });
+    }
+
+    const progress = user.audioList[0].progress;
+    res.status(200).json({ success: true, progress });
+  } catch (error) {
+    console.error('Error fetching progress:', error);
     res.status(500).json({ error: 'Server error', error });
   }
 });

@@ -8,10 +8,12 @@ import TranscriptPopup from './TranscriptPopup';
 interface AudioCardProps {
   fileDisplayName: string;
   fileStorageName: string;
+  progress?: number;
+
 }
 
-const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName }) => {
-  const [progress, setProgress] = useState(0);
+const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName, progress }) => {
+  // const [progress, setProgress] = useState(0);
   const router = useRouter();
   const { url } = useContext(storeContext);
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
@@ -51,6 +53,25 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
     }
   }
 
+  // useEffect(() => {
+  //   const fetchProgress = async () => {
+
+  //     try {
+  //       const response = await axios.get(`${url}/api/user/get-progress`, {
+  //         params: { userId, fileStorageName },
+  //         headers: {
+  //           token: LocalStorage.getItem('token') || '',
+  //         },
+  //       });
+  //       setProgress(response.data.progress || 0);
+  //     } catch (error) {
+  //       console.error('Error fetching progress:', error);
+  //     }
+  //   };
+
+  //   fetchProgress();
+  // }, [url, userId, fileStorageName]);
+
   useEffect(() => {
 
     if (!url) {
@@ -58,17 +79,17 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
       return;
     }
 
-    const fakeUpload = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(fakeUpload);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 500); // Simulate upload progress every 500ms
+    // const fakeUpload = setInterval(() => {
+    //   setProgress((prev) => {
+    //     if (prev >= 100) {
+    //       clearInterval(fakeUpload);
+    //       return 100;
+    //     }
+    //     return prev + 10;
+    //   });
+    // }, 500); // Simulate upload progress every 500ms
 
-    return () => clearInterval(fakeUpload);
+    // return () => clearInterval(fakeUpload);
   }, []);
 
   return (
@@ -81,7 +102,9 @@ const AudioCard: React.FC<AudioCardProps> = ({ fileDisplayName, fileStorageName 
           </div>
         </div>
         <div className='text-[20px] font-semi-bold mt-[10px] text-gray-30'>
-          {progress < 100 ? 'Uploading...' : 'Upload Complete'}
+        {progress === 0 && '시작 안 함'}
+        {(progress === 30 || progress === 70) && '진행중'}
+        {progress === 100 && '학습완료'}
         </div>
 
         <div className="mt-4 mb-4">
