@@ -280,24 +280,21 @@ userRouter.get('/myaccount', authMiddleware, async (req, res) => {
 //   }
 // });
 
-userRouter.put('/audio-progress', authMiddleware, async (req, res) => {
-  const { userId, fileStorageName, progress } = req.body;
+userRouter.post('/update-progress', authMiddleware, async (req, res) => {
 
   try {
-    const user = await usermodel.findOneAndUpdate(
+    const { userId, fileStorageName, progress } = req.body;
+
+    await usermodel.findOneAndUpdate(
       { _id: userId, 'audioList.fileStorageName': fileStorageName },
-      { $set: { 'audioList.$.progress': progress, 'audioList.$.dateRecorded': new Date() } },
-      { new: true }
+      { $set: { 'audioList.$.progress': progress } },
+      { new : true }
     );
 
-    if (!user) {
-      return res.status(404).json({ error: 'User or audio file not found' });
-    }
-
-    res.json({message: 'Progress updated successfully', user});
+    
+    res.status(200).json({ success: true, message: 'Progress updated successfully' });
   } catch (error) {
-    console.error('Error updating progress:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', error });
   }
 });
 

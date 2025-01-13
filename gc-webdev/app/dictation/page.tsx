@@ -93,26 +93,71 @@ const DictationPageContent: React.FC = () => {
     setUserAnswer(updatedInput);
   };
 
-  const handleSubmit = () => {
-    const queryString = new URLSearchParams({
-      url,
-      userAnswer: JSON.stringify(userAnswer), // Convert userAnswer array to a string
-      cardType,
-      fileStorageName,
-      userId,
-      transcript
-    }).toString();
+  // const handleSubmit = () => {
+  //   const queryString = new URLSearchParams({
+  //     url,
+  //     userAnswer: JSON.stringify(userAnswer), // Convert userAnswer array to a string
+  //     cardType,
+  //     fileStorageName,
+  //     userId,
+  //     transcript
+  //   }).toString();
 
-    sessionStorage.setItem("userAnswer", JSON.stringify(userAnswer));
-    sessionStorage.setItem("transcript", transcript);
+  //   sessionStorage.setItem("userAnswer", JSON.stringify(userAnswer));
+  //   sessionStorage.setItem("transcript", transcript);
 
-    if (userAnswer.length && transcript.length) {
-      console.log("Navigating to correction page with data:", queryString);
-      router.push(`/correction?url=${url}&cardType=${cardType}&fileStorageName=${fileStorageName}&userId=${userId}`);
-    } else {
-      console.log("submit failed : useranswer or transcript is empty");
-      return () => {if(!queryString) return <p>데이터를 조회중입니다..</p>}
+  //   if (userAnswer.length && transcript.length) {
+  //     console.log("Navigating to correction page with data:", queryString);
+  //     router.push(`/correction?url=${url}&cardType=${cardType}&fileStorageName=${fileStorageName}&userId=${userId}`);
+  //   } else {
+  //     console.log("submit failed : useranswer or transcript is empty");
+  //     return () => {if(!queryString) return <p>데이터를 조회중입니다..</p>}
+  //   }
+  // };
+  const handleSubmit = async () => {
+    console.log("Submitting progress update...");
+    console.log("User ID:", userId);
+    console.log("File Storage Name:", fileStorageName);
+    console.log("Progress:", 30);
+    try {
+      const token = LocalStorage.getItem("token");
+      const response = await axios.post(
+        `${apiUrl}/api/user/update-progress`,
+        {
+          userId,
+          fileStorageName,
+          progress: 30
+        },
+        { headers: { token }}
+      );
+
+      if (response.status === 200) {
+        console.log('Progress updated successfully:', response.data.message);
+      } else {
+        console.error('Failed to update progress:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating progress:', error);
     }
+
+    // const queryString = new URLSearchParams({
+    //   url,
+    //   userAnswer: JSON.stringify(userAnswer), // Convert userAnswer array to a string
+    //   cardType,
+    //   fileStorageName,
+    //   userId,
+    //   transcript
+    // }).toString();
+
+    // sessionStorage.setItem("userAnswer", JSON.stringify(userAnswer));
+    // sessionStorage.setItem("transcript", transcript);
+
+    // if (userAnswer.length && transcript.length) {
+    //   console.log("Navigating to correction page with data:", queryString);
+    //   router.push(`/correction?url=${url}&cardType=${cardType}&fileStorageName=${fileStorageName}&userId=${userId}`);
+    // } else {
+    //   console.log("submit failed : useranswer or transcript is empty");
+    // }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -142,6 +187,8 @@ const DictationPageContent: React.FC = () => {
       }
     }
   };
+
+
 
   // Add global keypress listener for shortcuts
   useEffect(() => {
@@ -260,8 +307,15 @@ const DictationPageContent: React.FC = () => {
               pathname: "/correction",
               query: { url, userAnswer: JSON.stringify(userAnswer), cardType, fileStorageName, userId, transcript },
             }}
+            onClick={handleSubmit}
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
           >
+          {/* Link with progress attribute added */}
+          {/* <Link
+            href="#"
+            onClick={handleSubmit}
+            className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'
+          > */}
           {/* <button 
             onClick={handleSubmit}
             className='flex mt-10 w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg bg-purple-middle text-white'

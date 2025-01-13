@@ -1,0 +1,103 @@
+// routes/user.js
+const express = require('express');
+const router = express.Router();
+const UserModel = require('../models/userModel');
+
+router.post('/update-progress', async (req, res) => {
+  const { userId, fileStorageName, progress } = req.body;
+
+  try {
+    await UserModel.updateOne(
+      { _id: userId, 'audioList.fileStorageName': fileStorageName },
+      { $set: { 'audioList.$.progress': progress } }
+    );
+    res.status(200).json({ message: 'Progress updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating progress', error });
+  }
+});
+
+module.exports = router;
+
+
+const handleSubmit = async () => {
+    try {
+      const token = LocalStorage.getItem("token");
+      const response = await axios.post(
+        `${apiUrl}/api/user/update-progress`,
+        {
+          userId,
+          fileStorageName,
+          progress: 100 // Assuming full progress when submit is clicked
+        },
+        { headers: { token } }
+      );
+  
+      if (response.status === 200) {
+        console.log('Progress updated successfully');
+      } else {
+        console.log('Failed to update progress');
+      }
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  
+    const queryString = new URLSearchParams({
+      url,
+      userAnswer: JSON.stringify(userAnswer),
+      cardType,
+      fileStorageName,
+      userId,
+      transcript
+    }).toString();
+  
+    sessionStorage.setItem("userAnswer", JSON.stringify(userAnswer));
+    sessionStorage.setItem("transcript", transcript);
+  
+    if (userAnswer.length && transcript.length) {
+      router.push(`/correction?url=${url}&cardType=${cardType}&fileStorageName=${fileStorageName}&userId=${userId}`);
+    } else {
+      console.log("Submit failed: userAnswer or transcript is empty");
+    }
+  };
+  
+
+  userRouter.post('/upload-transcript', authMiddleware, async (req, res) => {
+    try {
+      const { userId, fileStorageName, transcript } = req.body;
+  
+      if (!transcript || !fileStorageName) {
+        return res.status(400).send('Transcript or file name is missing');
+      }
+  
+      // if (!userId) {
+      //   return res.status(400).send('User ID is missing');
+      // }
+  
+      // const updatedUser = await usermodel.findOneAndUpdate(userId, {
+      //   $push: {
+      //     audioList: {
+      //       transcript: transcript
+      //     },
+      //   },
+      // }, { new: true });
+  
+      const user = await usermodel.findOneAndUpdate(
+        { _id: userId, 'audioList.fileStorageName': fileStorageName },
+        { $set: { 'audioList.$.transcript': transcript } },
+        { new: true }
+      );
+      
+      // if (!updatedUser) {
+      //   return res.status(404).send('User not found');
+      // }
+      if (!user) {
+        return res.status(404).send('User or file not found');
+      }
+  
+      res.status(200).json({ success: true, message: 'Transcript uploaded successfully' });
+    } catch (error) {
+      console.error('Error uploading transcript:', error);
+      res.status(500).send(error.message || 'Server error');
+    }
+  });
