@@ -226,6 +226,7 @@ const DictationPageContent: React.FC = () => {
                   ref={(el) => {
                     inputRefs.current[index] = el;
                   }} // Store input reference
+                  readOnly={initialBlanks[index] !== ''}
                   onFocus={() => {
                     // Optional: Select input text on focus
                     inputRefs.current[index]?.select();

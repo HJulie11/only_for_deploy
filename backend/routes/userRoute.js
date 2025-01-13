@@ -16,6 +16,14 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION
 });
 
+s3.listBuckets((err, data) => {
+  if (err) {
+    console.log('Error', err);
+  } else {
+    console.log('Buckets:', data.Buckets);
+  }
+});
+
 const storage = multer.memoryStorage();
 
 // const storage = multer.diskStorage({
@@ -34,11 +42,10 @@ userRouter.post('/register', registerUser);
 userRouter.post('/login', loginUser);
 
 userRouter.post('/upload-audio', upload.single('audioFile'), authMiddleware, async (req, res) => {
+  console.log('Received upload request');
   try {
     const userId = req.body.userId; // Pass User ID in the body
     const file = req.file;
-    const progress = req.body.progress || 0;
-    const dateRecorded = req.body.dateRecorded || null;
 
     if (!file) {
       return res.status(400).send('No file uploaded');
@@ -245,32 +252,54 @@ userRouter.get('/myaccount', authMiddleware, async (req, res) => {
   }
 });
 
-userRouter.put('/audio-progress/:userId/:audioId', authMiddleware, async (req, res) => {
-  const { userId, audioId } = req.params;
-  const { progress } = req.body;
+// userRouter.put('/audio-progress/:userId/:audioId', authMiddleware, async (req, res) => {
+//   const { userId, audioId } = req.params;
+//   const { progress } = req.body;
+
+//   try {
+//     const user = await usermodel.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     const audioFile = user.audioList.id(audioId);
+//     if (!audioFile) {
+//       return res.status(404).json({ error: 'Audio file not found' });
+//     }
+
+//     audioFile.progress = progress;
+//     if (progress === '100') {
+//       audioFile.dateRecorded = new Date();
+//     }
+
+//     await user.save();
+//     res.status(200).json({ success: true, message: 'Progress updated successfully' });
+//   } catch (error) {
+//     console.error('Error updating progress:', error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+userRouter.put('/audio-progress', authMiddleware, async (req, res) => {
+  const { userId, fileStorageName, progress } = req.body;
 
   try {
-    const user = await usermodel.findById(userId);
+    const user = await usermodel.findOneAndUpdate(
+      { _id: userId, 'audioList.fileStorageName': fileStorageName },
+      { $set: { 'audioList.$.progress': progress, 'audioList.$.dateRecorded': new Date() } },
+      { new: true }
+    );
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'User or audio file not found' });
     }
 
-    const audioFile = user.audioList.id(audioId);
-    if (!audioFile) {
-      return res.status(404).json({ error: 'Audio file not found' });
-    }
-
-    audioFile.progress = progress;
-    if (progress === '100') {
-      audioFile.dateRecorded = new Date();
-    }
-
-    await user.save();
-    res.status(200).json({ success: true, message: 'Progress updated successfully' });
+    res.json({message: 'Progress updated successfully', user});
   } catch (error) {
     console.error('Error updating progress:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 export default userRouter;

@@ -6,6 +6,7 @@ import userRouter from './routes/userRoute.js'
 import adminRouter from './routes/adminRoute.js'
 // Import the YoutubeTranscript module
 import { YoutubeTranscript } from 'youtube-transcript';
+// import rateLimit from 'express-rate-limit';
 
 // APP CONFIG
 const app = express()
@@ -81,6 +82,15 @@ app.get('/', (req, res) => {
 // })
 
 // const PORT = process.env.PORT || 4000;
+
+// Example rate limiter
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // Limit each IP to 100 requests per windowMs
+// });
+
+// app.use(limiter);
+
 
 app.listen(port, () => {
   console.log(`Server Listening on ${port}`);
