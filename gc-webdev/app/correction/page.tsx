@@ -132,10 +132,6 @@ const CorrectionPageContent = () => {
   };
 
   const handleSubmit = async () => {
-    console.log("Submitting progress update...");
-    console.log("User ID:", userId);
-    console.log("File Storage Name:", fileStorageName);
-    console.log("Progress:", 70);
     try {
       const token = LocalStorage.getItem('token');
       const response = await axios.post(
@@ -227,7 +223,7 @@ const CorrectionPageContent = () => {
           <Link
             href={{
               pathname: "/reading",
-              query: { correctedAnswers: JSON.stringify(filteredCorrectWords) },
+              query: { correctedAnswers: JSON.stringify(filteredCorrectWords), fileStorageName, userId},
             }}
             onClick={handleSubmit}
             className={`flex w-[170px] h-[50px] p-2 center items-center justify-center rounded-lg ${isAllCorrected ? 'bg-purple-middle' : 'bg-gray-400'} text-white`}
